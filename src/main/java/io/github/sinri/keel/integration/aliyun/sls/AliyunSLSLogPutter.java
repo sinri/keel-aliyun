@@ -1,10 +1,9 @@
-package io.github.sinri.keel.integration.aliyun.sls.writer;
+package io.github.sinri.keel.integration.aliyun.sls;
 
-import io.github.sinri.keel.integration.aliyun.sls.writer.entity.LogGroup;
-import io.github.sinri.keel.integration.aliyun.sls.writer.protocol.Lz4Utils;
+import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.protocol.Lz4Utils;
 import io.github.sinri.keel.utils.DigestUtils;
 import io.github.sinri.keel.utils.NetUtils;
-import io.netty.util.NetUtil;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;

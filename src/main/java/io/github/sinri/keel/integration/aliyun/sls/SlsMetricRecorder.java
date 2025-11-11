@@ -1,11 +1,8 @@
-package io.github.sinri.keel.integration.aliyun.sls.metric;
+package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.base.configuration.KeelConfigElement;
-import io.github.sinri.keel.integration.aliyun.sls.writer.AliyunSLSDisabled;
-import io.github.sinri.keel.integration.aliyun.sls.writer.AliyunSLSLogPutter;
-import io.github.sinri.keel.integration.aliyun.sls.writer.AliyunSlsConfigElement;
-import io.github.sinri.keel.integration.aliyun.sls.writer.entity.LogGroup;
-import io.github.sinri.keel.integration.aliyun.sls.writer.entity.LogItem;
+import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
 import io.github.sinri.keel.logger.api.metric.MetricRecord;
 import io.github.sinri.keel.logger.metric.AbstractMetricRecorder;
 import io.vertx.core.Future;

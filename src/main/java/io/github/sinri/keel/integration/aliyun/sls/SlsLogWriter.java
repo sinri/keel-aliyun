@@ -1,18 +1,14 @@
-package io.github.sinri.keel.integration.aliyun.sls.record;
+package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.base.configuration.KeelConfigElement;
-import io.github.sinri.keel.integration.aliyun.sls.writer.AliyunSLSDisabled;
-import io.github.sinri.keel.integration.aliyun.sls.writer.AliyunSLSLogPutter;
-import io.github.sinri.keel.integration.aliyun.sls.writer.AliyunSlsConfigElement;
-import io.github.sinri.keel.integration.aliyun.sls.writer.entity.LogGroup;
-import io.github.sinri.keel.integration.aliyun.sls.writer.entity.LogItem;
+import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
 import io.github.sinri.keel.logger.api.record.LogRecord;
 import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
 import io.vertx.core.Future;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.sinri.keel.facade.KeelInstance.Keel;
@@ -20,7 +16,6 @@ import static io.github.sinri.keel.facade.KeelInstance.Keel;
 public class SlsLogWriter extends QueuedLogWriter<LogRecord> {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
-    private final AtomicBoolean stopRef = new AtomicBoolean(false);
     private final int bufferSize;
     @Nonnull
     private final AliyunSLSLogPutter logPutter;

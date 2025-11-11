@@ -1,4 +1,4 @@
-package io.github.sinri.keel.integration.aliyun.sls.writer;
+package io.github.sinri.keel.integration.aliyun.sls;
 
 
 import io.github.sinri.keel.base.configuration.KeelConfigElement;

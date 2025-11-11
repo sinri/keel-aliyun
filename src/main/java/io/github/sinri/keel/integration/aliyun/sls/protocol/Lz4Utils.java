@@ -1,4 +1,4 @@
-package io.github.sinri.keel.integration.aliyun.sls.writer.protocol;
+package io.github.sinri.keel.integration.aliyun.sls.protocol;
 
 import io.vertx.core.buffer.Buffer;
 import net.jpountz.lz4.LZ4Compressor;
