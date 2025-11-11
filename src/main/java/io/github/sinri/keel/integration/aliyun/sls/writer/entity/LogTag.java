@@ -1,7 +1,7 @@
-package io.github.sinri.drydock.plugin.aliyun.sls.writer.entity;
+package io.github.sinri.keel.integration.aliyun.sls.writer.entity;
 
 import com.google.protobuf.DynamicMessage;
-import io.github.sinri.drydock.plugin.aliyun.sls.writer.protocol.LogEntityDescriptors;
+import io.github.sinri.keel.integration.aliyun.sls.writer.protocol.LogEntityDescriptors;
 
 /**
  * @see <a

@@ -1,7 +1,10 @@
-package io.github.sinri.drydock.plugin.aliyun.sls.writer;
+package io.github.sinri.keel.integration.aliyun.sls.writer;
 
-import io.github.sinri.drydock.plugin.aliyun.sls.writer.entity.LogGroup;
-import io.github.sinri.drydock.plugin.aliyun.sls.writer.protocol.Lz4Utils;
+import io.github.sinri.keel.integration.aliyun.sls.writer.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.writer.protocol.Lz4Utils;
+import io.github.sinri.keel.utils.DigestUtils;
+import io.github.sinri.keel.utils.NetUtils;
+import io.netty.util.NetUtil;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
@@ -24,7 +27,7 @@ import static io.github.sinri.keel.facade.KeelInstance.Keel;
 /**
  * @since 2.1.0
  */
-class AliyunSLSLogPutter implements Closeable {
+public class AliyunSLSLogPutter implements Closeable {
     @Nonnull
     private final String accessKeyId;
     @Nonnull
@@ -54,7 +57,7 @@ class AliyunSLSLogPutter implements Closeable {
             return "";
         }
         // Rule 1: Replace [IP] to local address
-        String localHostAddress = Keel.netHelper().getLocalHostAddress();
+        String localHostAddress = NetUtils.getLocalHostAddress();
         if (localHostAddress == null) {
             Keel.getLogger().warning("Could not get local host address for SLS source!");
             return "";
@@ -185,7 +188,7 @@ class AliyunSLSLogPutter implements Closeable {
         StringBuilder sb = new StringBuilder();
         sb.append(method).append("\n");
         if (body != null) {
-            String md5 = Keel.digestHelper().MD5(body.getBytes());
+            String md5 = DigestUtils.MD5(body.getBytes());
             sb.append(md5).append("\n");
         } else {
             sb.append("\n");

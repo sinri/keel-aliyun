@@ -1,4 +1,4 @@
-package io.github.sinri.drydock.plugin.aliyun.sls.writer.protocol;
+package io.github.sinri.keel.integration.aliyun.sls.writer.protocol;
 
 import com.google.protobuf.DescriptorProtos;
 import com.google.protobuf.Descriptors;

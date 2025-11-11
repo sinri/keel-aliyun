@@ -1,6 +1,7 @@
-package io.github.sinri.drydock.plugin.aliyun.sls.writer;
+package io.github.sinri.keel.integration.aliyun.sls.writer;
 
-import io.github.sinri.keel.facade.configuration.KeelConfigElement;
+
+import io.github.sinri.keel.base.configuration.KeelConfigElement;
 
 import javax.annotation.Nonnull;
 import java.util.List;

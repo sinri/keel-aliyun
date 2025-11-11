@@ -1,1 +1,1 @@
-package io.github.sinri.keel.integration.aliyun.logger;
+package io.github.sinri.keel.integration.aliyun.sls;

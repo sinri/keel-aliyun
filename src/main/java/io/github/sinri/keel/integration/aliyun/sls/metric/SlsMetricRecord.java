@@ -1,4 +1,4 @@
-package io.github.sinri.keel.logger.metric;
+package io.github.sinri.keel.integration.aliyun.sls.metric;
 
 import io.github.sinri.keel.core.json.JsonObjectConvertible;
 import io.github.sinri.keel.logger.api.issue.IssueRecord;
@@ -6,6 +6,7 @@ import io.github.sinri.keel.logger.api.metric.MetricRecord;
 import io.vertx.core.json.JsonObject;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,16 +15,19 @@ import java.util.Map;
  * @since 3.2.0 extends BaseIssueRecord
  *         It is allowed to override this class, for fixed topic and metric.
  */
-public class MetricRecordImpl extends IssueRecord<MetricRecordImpl>
-        implements MetricRecord<MetricRecordImpl>, JsonObjectConvertible {
+public class SlsMetricRecord extends IssueRecord<SlsMetricRecord>
+        implements MetricRecord, JsonObjectConvertible {
     private final @Nonnull Map<String, String> labelMap = new HashMap<>();
     private final @Nonnull String metricName;
     private final double value;
 
-    public MetricRecordImpl(@Nonnull String metricName, double value) {
+    public SlsMetricRecord(@Nonnull String metricName, double value, @Nullable Map<String, String> labels) {
         super();
         this.metricName = metricName;
         this.value = value;
+        if (labels != null) {
+            this.labelMap.putAll(labels);
+        }
     }
 
     @Nonnull
@@ -56,15 +60,9 @@ public class MetricRecordImpl extends IssueRecord<MetricRecordImpl>
         return labelMap;
     }
 
-    @Override
-    public MetricRecordImpl label(String name, String value) {
-        this.labelMap.put(name, value);
-        return this;
-    }
-
     @Nonnull
     @Override
-    public MetricRecordImpl getImplementation() {
+    public SlsMetricRecord getImplementation() {
         return this;
     }
 
