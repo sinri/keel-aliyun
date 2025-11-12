@@ -5,13 +5,13 @@ import io.github.sinri.keel.logger.api.adapter.LogWriter;
 import io.github.sinri.keel.logger.api.adapter.Render;
 import io.github.sinri.keel.logger.api.issue.IssueRecord;
 import io.github.sinri.keel.logger.api.record.LoggingRecord;
-import io.github.sinri.keel.logger.impl.issue.AbstractIssueRecorder;
+import io.github.sinri.keel.logger.impl.issue.AbstractLoggingIssueRecorder;
 import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
 
 import javax.annotation.Nonnull;
 import java.util.function.Supplier;
 
-public class SlsIssueRecorder<T extends IssueRecord<T>> extends AbstractIssueRecorder<T, LoggingRecord> {
+public class SlsIssueRecorder<T extends IssueRecord<T>> extends AbstractLoggingIssueRecorder<T> {
     @Nonnull
     private final Adapter<T, LoggingRecord> adapter;
     @Nonnull

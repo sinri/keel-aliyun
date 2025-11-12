@@ -8,7 +8,7 @@
     <artifactId>keel-aliyun</artifactId>
     <version>5.0.0-SNAPSHOT</version>
 
-    <name>Keel Integration for Aliyun</name>
+    <name>Keel-Aliyun</name>
     <description>
         The Keel Integration for Aliyun
     </description>
