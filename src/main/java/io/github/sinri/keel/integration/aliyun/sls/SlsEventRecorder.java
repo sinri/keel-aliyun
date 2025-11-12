@@ -4,46 +4,46 @@ import io.github.sinri.keel.logger.api.adapter.Adapter;
 import io.github.sinri.keel.logger.api.adapter.LogWriter;
 import io.github.sinri.keel.logger.api.adapter.Render;
 import io.github.sinri.keel.logger.api.event.EventRecord;
-import io.github.sinri.keel.logger.api.record.LogRecord;
+import io.github.sinri.keel.logger.api.record.LoggingRecord;
 import io.github.sinri.keel.logger.impl.event.AbstractEventRecorder;
 import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
 
 import javax.annotation.Nonnull;
 
-public class SlsEventRecorder extends AbstractEventRecorder<LogRecord> {
+public class SlsEventRecorder extends AbstractEventRecorder<LoggingRecord> {
     @Nonnull
-    private final Adapter<EventRecord, LogRecord> adapter;
+    private final Adapter<EventRecord, LoggingRecord> adapter;
 
-    public SlsEventRecorder(@Nonnull String topic, @Nonnull QueuedLogWriter<LogRecord> writer) {
+    public SlsEventRecorder(@Nonnull String topic, @Nonnull QueuedLogWriter<LoggingRecord> writer) {
         super(topic);
         this.adapter = new AdapterImpl(writer);
     }
 
     @Nonnull
     @Override
-    public Adapter<EventRecord, LogRecord> adapter() {
+    public Adapter<EventRecord, LoggingRecord> adapter() {
         return adapter;
     }
 
-    private static class AdapterImpl implements Adapter<EventRecord, LogRecord> {
+    private static class AdapterImpl implements Adapter<EventRecord, LoggingRecord> {
 
-        private final LogWriter<LogRecord> writer;
-        private final Render<EventRecord, LogRecord> render;
+        private final LogWriter<LoggingRecord> writer;
+        private final Render<EventRecord, LoggingRecord> render;
 
-        public AdapterImpl(@Nonnull QueuedLogWriter<LogRecord> writer) {
+        public AdapterImpl(@Nonnull QueuedLogWriter<LoggingRecord> writer) {
             this.writer = writer;
             this.render = Event2LogRenderImpl.getInstance();
         }
 
         @Nonnull
         @Override
-        public Render<EventRecord, LogRecord> render() {
+        public Render<EventRecord, LoggingRecord> render() {
             return render;
         }
 
         @Nonnull
         @Override
-        public LogWriter<LogRecord> writer() {
+        public LogWriter<LoggingRecord> writer() {
             return writer;
         }
     }

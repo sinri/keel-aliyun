@@ -3,7 +3,7 @@ package io.github.sinri.keel.integration.aliyun.sls;
 import io.github.sinri.keel.base.configuration.KeelConfigElement;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
-import io.github.sinri.keel.logger.api.record.LogRecord;
+import io.github.sinri.keel.logger.api.record.LoggingRecord;
 import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
 import io.vertx.core.Future;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.sinri.keel.facade.KeelInstance.Keel;
 
-public class SlsLogWriter extends QueuedLogWriter<LogRecord> {
+public class SlsLogWriter extends QueuedLogWriter<LoggingRecord> {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
     private final int bufferSize;
@@ -45,7 +45,7 @@ public class SlsLogWriter extends QueuedLogWriter<LogRecord> {
 
     @Nonnull
     @Override
-    protected Future<Void> processLogRecords(@Nonnull String topic, @Nonnull List<LogRecord> batch) {
+    protected Future<Void> processLogRecords(@Nonnull String topic, @Nonnull List<LoggingRecord> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
         return Keel.asyncCallIteratively(batch, eventLog -> {
