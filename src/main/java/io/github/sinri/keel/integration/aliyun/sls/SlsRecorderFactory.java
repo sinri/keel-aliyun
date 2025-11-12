@@ -1,12 +1,13 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
+import io.github.sinri.keel.logger.adapter.writer.QueuedLogWriter;
 import io.github.sinri.keel.logger.api.event.EventRecorder;
 import io.github.sinri.keel.logger.api.event.RecorderFactory;
 import io.github.sinri.keel.logger.api.issue.IssueRecord;
 import io.github.sinri.keel.logger.api.issue.IssueRecorder;
+import io.github.sinri.keel.logger.api.issue.LoggingIssueRecorder;
 import io.github.sinri.keel.logger.api.record.LoggingRecord;
 import io.github.sinri.keel.logger.api.record.LoggingRecorder;
-import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
@@ -48,6 +49,11 @@ public class SlsRecorderFactory implements RecorderFactory<LoggingRecord> {
 
     @Override
     public <L extends IssueRecord<L>> IssueRecorder<L, LoggingRecord> createIssueRecorder(@Nonnull String topic, @Nonnull Supplier<L> issueRecordSupplier) {
+        return new SlsIssueRecorder<>(topic, issueRecordSupplier, writer());
+    }
+
+    @Override
+    public <L extends IssueRecord<L>> LoggingIssueRecorder<L> createLoggingIssueRecorder(@Nonnull String topic, @Nonnull Supplier<L> issueRecordSupplier) {
         return new SlsIssueRecorder<>(topic, issueRecordSupplier, writer());
     }
 

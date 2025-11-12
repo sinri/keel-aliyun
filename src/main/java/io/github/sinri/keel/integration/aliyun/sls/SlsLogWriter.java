@@ -3,8 +3,8 @@ package io.github.sinri.keel.integration.aliyun.sls;
 import io.github.sinri.keel.base.configuration.KeelConfigElement;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
+import io.github.sinri.keel.logger.adapter.writer.QueuedLogWriter;
 import io.github.sinri.keel.logger.api.record.LoggingRecord;
-import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
 import io.vertx.core.Future;
 
 import javax.annotation.Nonnull;

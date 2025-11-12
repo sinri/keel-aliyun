@@ -1,12 +1,12 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
+import io.github.sinri.keel.logger.adapter.writer.QueuedLogWriter;
 import io.github.sinri.keel.logger.api.adapter.Adapter;
 import io.github.sinri.keel.logger.api.adapter.LogWriter;
 import io.github.sinri.keel.logger.api.adapter.Render;
 import io.github.sinri.keel.logger.api.event.EventRecord;
 import io.github.sinri.keel.logger.api.record.LoggingRecord;
-import io.github.sinri.keel.logger.impl.event.AbstractEventRecorder;
-import io.github.sinri.keel.logger.impl.record.QueuedLogWriter;
+import io.github.sinri.keel.logger.event.AbstractEventRecorder;
 
 import javax.annotation.Nonnull;
 
