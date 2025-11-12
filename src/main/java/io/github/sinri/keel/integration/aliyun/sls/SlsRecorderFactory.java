@@ -1,13 +1,13 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
-import io.github.sinri.keel.logger.adapter.writer.QueuedLogWriter;
+import io.github.sinri.keel.logger.api.consumer.TopicRecordConsumer;
+import io.github.sinri.keel.logger.api.event.EventRecord;
 import io.github.sinri.keel.logger.api.event.EventRecorder;
-import io.github.sinri.keel.logger.api.event.RecorderFactory;
+import io.github.sinri.keel.logger.api.factory.RecorderFactory;
 import io.github.sinri.keel.logger.api.issue.IssueRecord;
 import io.github.sinri.keel.logger.api.issue.IssueRecorder;
-import io.github.sinri.keel.logger.api.issue.LoggingIssueRecorder;
-import io.github.sinri.keel.logger.api.record.LoggingRecord;
-import io.github.sinri.keel.logger.api.record.LoggingRecorder;
+import io.github.sinri.keel.logger.base.event.BaseEventRecorder;
+import io.github.sinri.keel.logger.consumer.QueuedTopicRecordConsumer;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
@@ -18,54 +18,50 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class SlsRecorderFactory implements RecorderFactory<LoggingRecord> {
+public class SlsRecorderFactory implements RecorderFactory {
     private static final SlsRecorderFactory INSTANCE = new SlsRecorderFactory();
-    private final QueuedLogWriter<LoggingRecord> writer;
+    private final QueuedTopicRecordConsumer consumer;
 
     private SlsRecorderFactory() {
-        QueuedLogWriter<LoggingRecord> tempWriter;
+        QueuedTopicRecordConsumer tempWriter;
         try {
-            tempWriter = new SlsLogWriter();
+            tempWriter = new SlsQueuedTopicRecordConsumer();
             tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
         } catch (AliyunSLSDisabled e) {
             System.err.println("Aliyun SLS Disabled, fallback to FallbackQueuedLogWriter");
             tempWriter = new FallbackQueuedLogWriter();
         }
-        this.writer = tempWriter;
+        this.consumer = tempWriter;
     }
 
     public static SlsRecorderFactory getInstance() {
         return INSTANCE;
     }
 
-    private QueuedLogWriter<LoggingRecord> writer() {
-        return writer;
+    @Override
+    public EventRecorder createEventRecorder(@Nonnull String topic) {
+        return new SlsEventRecorder(topic, consumer);
     }
 
     @Override
-    public EventRecorder<LoggingRecord> createEventLogRecorder(@Nonnull String topic) {
-        return new SlsEventRecorder(topic, writer());
+    public TopicRecordConsumer sharedTopicRecordConsumer() {
+        return consumer;
     }
 
     @Override
-    public <L extends IssueRecord<L>> IssueRecorder<L, LoggingRecord> createIssueRecorder(@Nonnull String topic, @Nonnull Supplier<L> issueRecordSupplier) {
-        return new SlsIssueRecorder<>(topic, issueRecordSupplier, writer());
+    public <L extends IssueRecord<L>> IssueRecorder<L> createIssueRecorder(@Nonnull String topic, @Nonnull Supplier<L> issueRecordSupplier) {
+        return new SlsIssueRecorder<>(topic, issueRecordSupplier, consumer);
     }
 
-    @Override
-    public <L extends IssueRecord<L>> LoggingIssueRecorder<L> createLoggingIssueRecorder(@Nonnull String topic, @Nonnull Supplier<L> issueRecordSupplier) {
-        return new SlsIssueRecorder<>(topic, issueRecordSupplier, writer());
-    }
-
-    private static class FallbackQueuedLogWriter extends QueuedLogWriter<LoggingRecord> {
-        private final Map<String, LoggingRecorder> logRecordMap = new ConcurrentHashMap<>();
+    private static class FallbackQueuedLogWriter extends QueuedTopicRecordConsumer {
+        private final Map<String, EventRecorder> logRecordMap = new ConcurrentHashMap<>();
 
         @Nonnull
         @Override
-        protected Future<Void> processLogRecords(@Nonnull String topic, @Nonnull List<LoggingRecord> batch) {
+        protected Future<Void> processLogRecords(@Nonnull String topic, @Nonnull List<EventRecord> batch) {
             batch.forEach(item -> {
-                logRecordMap.computeIfAbsent(topic, LoggingRecorder::embedded)
-                            .recordLog(item);
+                logRecordMap.computeIfAbsent(topic, BaseEventRecorder::new)
+                            .recordEvent(item);
             });
             return Future.succeededFuture();
         }

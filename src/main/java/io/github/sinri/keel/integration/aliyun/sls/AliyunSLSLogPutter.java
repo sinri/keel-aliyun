@@ -2,6 +2,8 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.protocol.Lz4Utils;
+import io.github.sinri.keel.logger.api.event.EventRecorder;
+import io.github.sinri.keel.logger.factory.StdoutRecorderFactory;
 import io.github.sinri.keel.utils.DigestUtils;
 import io.github.sinri.keel.utils.NetUtils;
 import io.vertx.core.Future;
@@ -35,12 +37,15 @@ public class AliyunSLSLogPutter implements Closeable {
     private final WebClient webClient;
     @Nonnull
     private final String endpoint;
+    private final EventRecorder eventRecorder;
 
     public AliyunSLSLogPutter(@Nonnull String accessKeyId, @Nonnull String accessKeySecret, @Nonnull String endpoint) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.webClient = WebClient.create(Keel.getVertx());
         this.endpoint = endpoint;
+        this.eventRecorder = StdoutRecorderFactory.getInstance()
+                                                  .createEventRecorder(AliyunSLSLogPutter.class.getName());
     }
 
     /**
@@ -58,7 +63,9 @@ public class AliyunSLSLogPutter implements Closeable {
         // Rule 1: Replace [IP] to local address
         String localHostAddress = NetUtils.getLocalHostAddress();
         if (localHostAddress == null) {
-            Keel.getLogger().warning("Could not get local host address for SLS source!");
+            StdoutRecorderFactory.getInstance()
+                                 .createEventRecorder(AliyunSLSLogPutter.class.getName())
+                                 .warning("Could not get local host address for SLS source!");
             return "";
         }
         return configuredSourceExpression.replaceAll("\\[IP]", localHostAddress);
@@ -66,7 +73,7 @@ public class AliyunSLSLogPutter implements Closeable {
 
     @Override
     public void close() {
-        Keel.getLogger().debug("Closing AliyunSLSLogPutter web client");
+        eventRecorder.debug("Closing AliyunSLSLogPutter web client");
         this.webClient.close();
     }
 
@@ -130,13 +137,13 @@ public class AliyunSLSLogPutter implements Closeable {
                       .compose(bufferHttpResponse -> {
                           if (bufferHttpResponse.statusCode() != 200) {
                               // System.out.println("write to sls: 200");
-                              Keel.getLogger().error("put log failed [" + bufferHttpResponse.statusCode() + "] "
+                              eventRecorder.error("put log failed [" + bufferHttpResponse.statusCode() + "] "
                                       + bufferHttpResponse.bodyAsString());
                           }
                           return Future.succeededFuture();
                       })
                       .recover(throwable -> {
-                          Keel.getLogger().exception(throwable, "put log failed [X]");
+                          eventRecorder.exception(throwable, "put log failed [X]");
                           return Future.succeededFuture();
                       })
                       .mapEmpty();

@@ -7,8 +7,6 @@ import net.jpountz.lz4.LZ4Factory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
-
 /**
  * LZ4压缩工具类
  * <p>
@@ -122,11 +120,11 @@ public final class Lz4Utils {
                 tempBuffer = new byte[bufferSize];
                 tempBirth = System.currentTimeMillis();
             }
-            Keel.getLogger().warning(String.format(
-                    "io.github.sinri.drydock.plugin.aliyun.sls.writer.protocol." +
-                            "Lz4Utils.BufferPool.resetTempBuffer(%d) called",
-                    bufferSize
-            ));
+            //            Keel.getLogger().warning(String.format(
+            //                    "io.github.sinri.drydock.plugin.aliyun.sls.writer.protocol." +
+            //                            "Lz4Utils.BufferPool.resetTempBuffer(%d) called",
+            //                    bufferSize
+            //            ));
         }
 
         byte[] getBuffer(int requiredSize) {
