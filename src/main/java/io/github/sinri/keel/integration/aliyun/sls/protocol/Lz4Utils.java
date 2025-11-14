@@ -3,9 +3,9 @@ package io.github.sinri.keel.integration.aliyun.sls.protocol;
 import io.vertx.core.buffer.Buffer;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * LZ4压缩工具类
@@ -30,7 +30,7 @@ public final class Lz4Utils {
      * @param buffer 待压缩的Buffer
      * @return 压缩后的Buffer
      */
-    @Nonnull
+    @NotNull
     public static Buffer compress(@Nullable Buffer buffer) {
         if (buffer == null || buffer.length() == 0) {
             return Buffer.buffer();
@@ -47,7 +47,7 @@ public final class Lz4Utils {
      * @deprecated as of 3.0.0.1, renamed from original {@link #compress(byte[])} and will be removed in a future release
      */
     @Deprecated
-    @Nonnull
+    @NotNull
     static byte[] compressLegacy(@Nullable byte[] srcBytes) {
         if (srcBytes == null || srcBytes.length == 0) {
             return new byte[0];
@@ -70,7 +70,7 @@ public final class Lz4Utils {
      * @return 压缩后的字节数组
      * @since 3.0.0.1
      */
-    @Nonnull
+    @NotNull
     public static byte[] compress(@Nullable byte[] srcBytes) {
         if (srcBytes == null || srcBytes.length == 0) {
             return new byte[0];
@@ -98,11 +98,11 @@ public final class Lz4Utils {
      */
     private static class BufferPool {
         private static final int BASE_BUFFER_SIZE = 10 * 1024 * 1024;
-        @Nonnull
+        @NotNull
         private final byte[] fixedBuffer;
-        @Nonnull
+        @NotNull
         private final byte[] emptyBuffer;
-        @Nonnull
+        @NotNull
         private byte[] tempBuffer;
         private long tempBirth;
 

@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.base.configuration.KeelConfigElement;
-import io.github.sinri.keel.core.json.JsonifiedThrowable;
+import io.github.sinri.keel.base.json.JsonifiedThrowable;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
 import io.github.sinri.keel.logger.api.event.EventRecord;
@@ -9,19 +9,20 @@ import io.github.sinri.keel.logger.consumer.QueuedTopicRecordConsumer;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
+import static io.github.sinri.keel.base.KeelInstance.Keel;
+
 
 public class SlsQueuedTopicRecordConsumer extends QueuedTopicRecordConsumer {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
     private final int bufferSize;
-    @Nonnull
+    @NotNull
     private final AliyunSLSLogPutter logPutter;
 
     public SlsQueuedTopicRecordConsumer() throws AliyunSLSDisabled {
@@ -48,9 +49,9 @@ public class SlsQueuedTopicRecordConsumer extends QueuedTopicRecordConsumer {
     }
 
 
-    @Nonnull
+    @NotNull
     @Override
-    protected Future<Void> processLogRecords(@Nonnull String topic, @Nonnull List<EventRecord> batch) {
+    protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<EventRecord> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
         return Keel.asyncCallIteratively(batch, eventLog -> {

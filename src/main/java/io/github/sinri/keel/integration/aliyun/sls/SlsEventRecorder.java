@@ -1,13 +1,13 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
-import io.github.sinri.keel.logger.base.event.BaseEventRecorder;
+import io.github.sinri.keel.logger.api.event.BaseEventRecorder;
 import io.github.sinri.keel.logger.consumer.QueuedTopicRecordConsumer;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 
 public class SlsEventRecorder extends BaseEventRecorder {
 
-    public SlsEventRecorder(@Nonnull String topic, @Nonnull QueuedTopicRecordConsumer consumer) {
+    public SlsEventRecorder(@NotNull String topic, @NotNull QueuedTopicRecordConsumer consumer) {
         super(topic, consumer);
     }
 

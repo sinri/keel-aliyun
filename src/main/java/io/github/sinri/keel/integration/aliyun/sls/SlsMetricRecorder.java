@@ -6,18 +6,19 @@ import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
 import io.github.sinri.keel.logger.api.metric.MetricRecord;
 import io.github.sinri.keel.logger.metric.AbstractMetricRecorder;
 import io.vertx.core.Future;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
+import static io.github.sinri.keel.base.KeelInstance.Keel;
+
 
 public class SlsMetricRecorder extends AbstractMetricRecorder {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
-    @Nonnull
+    @NotNull
     private final AliyunSLSLogPutter logPutter;
 
     public SlsMetricRecorder() throws AliyunSLSDisabled {
@@ -37,7 +38,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
         // after initialized, do not forget to deploy it.
     }
 
-    @Nonnull
+    @NotNull
     private AliyunSLSLogPutter buildProducer() {
         return new AliyunSLSLogPutter(
                 aliyunSlsConfig.getAccessKeyId(),
@@ -72,7 +73,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
      *
      * @return LogItem
      */
-    private LogItem buildLogItem(@Nonnull MetricRecord metricRecord) {
+    private LogItem buildLogItem(@NotNull MetricRecord metricRecord) {
         String labelsKey = "__labels__";
         String timeKey = "__time_nano__";
         String valueKey = "__value__";

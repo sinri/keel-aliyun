@@ -2,8 +2,8 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 
 import io.github.sinri.keel.base.configuration.KeelConfigElement;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -20,7 +20,7 @@ public class AliyunSlsConfigElement extends KeelConfigElement {
     private static final String CONFIG_KEY_ACCESS_KEY_ID = "accessKeyId";
     private static final String CONFIG_KEY_ACCESS_KEY_SECRET = "accessKeySecret";
 
-    public AliyunSlsConfigElement(@Nonnull KeelConfigElement another) {
+    public AliyunSlsConfigElement(@NotNull KeelConfigElement another) {
         super(another);
     }
 

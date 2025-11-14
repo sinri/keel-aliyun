@@ -1,18 +1,18 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.logger.api.consumer.TopicRecordConsumer;
+import io.github.sinri.keel.logger.api.event.BaseEventRecorder;
 import io.github.sinri.keel.logger.api.event.EventRecord;
 import io.github.sinri.keel.logger.api.event.EventRecorder;
 import io.github.sinri.keel.logger.api.factory.RecorderFactory;
 import io.github.sinri.keel.logger.api.issue.IssueRecord;
 import io.github.sinri.keel.logger.api.issue.IssueRecorder;
-import io.github.sinri.keel.logger.base.event.BaseEventRecorder;
 import io.github.sinri.keel.logger.consumer.QueuedTopicRecordConsumer;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +39,7 @@ public class SlsRecorderFactory implements RecorderFactory {
     }
 
     @Override
-    public EventRecorder createEventRecorder(@Nonnull String topic) {
+    public EventRecorder createEventRecorder(@NotNull String topic) {
         return new SlsEventRecorder(topic, consumer);
     }
 
@@ -49,16 +49,16 @@ public class SlsRecorderFactory implements RecorderFactory {
     }
 
     @Override
-    public <L extends IssueRecord<L>> IssueRecorder<L> createIssueRecorder(@Nonnull String topic, @Nonnull Supplier<L> issueRecordSupplier) {
+    public <L extends IssueRecord<L>> IssueRecorder<L> createIssueRecorder(@NotNull String topic, @NotNull Supplier<L> issueRecordSupplier) {
         return new SlsIssueRecorder<>(topic, issueRecordSupplier, consumer);
     }
 
     private static class FallbackQueuedLogWriter extends QueuedTopicRecordConsumer {
         private final Map<String, EventRecorder> logRecordMap = new ConcurrentHashMap<>();
 
-        @Nonnull
+        @NotNull
         @Override
-        protected Future<Void> processLogRecords(@Nonnull String topic, @Nonnull List<EventRecord> batch) {
+        protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<EventRecord> batch) {
             batch.forEach(item -> {
                 logRecordMap.computeIfAbsent(topic, BaseEventRecorder::new)
                             .recordEvent(item);

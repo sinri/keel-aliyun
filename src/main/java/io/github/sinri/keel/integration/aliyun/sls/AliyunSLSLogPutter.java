@@ -1,18 +1,18 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
+import io.github.sinri.keel.base.utils.DigestUtils;
+import io.github.sinri.keel.base.utils.NetUtils;
 import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.protocol.Lz4Utils;
 import io.github.sinri.keel.logger.api.event.EventRecorder;
 import io.github.sinri.keel.logger.factory.StdoutRecorderFactory;
-import io.github.sinri.keel.utils.DigestUtils;
-import io.github.sinri.keel.utils.NetUtils;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.Closeable;
@@ -23,23 +23,24 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static io.github.sinri.keel.facade.KeelInstance.Keel;
+import static io.github.sinri.keel.base.KeelInstance.Keel;
+
 
 /**
  * @since 2.1.0
  */
 public class AliyunSLSLogPutter implements Closeable {
-    @Nonnull
+    @NotNull
     private final String accessKeyId;
-    @Nonnull
+    @NotNull
     private final String accessKeySecret;
-    @Nonnull
+    @NotNull
     private final WebClient webClient;
-    @Nonnull
+    @NotNull
     private final String endpoint;
     private final EventRecorder eventRecorder;
 
-    public AliyunSLSLogPutter(@Nonnull String accessKeyId, @Nonnull String accessKeySecret, @Nonnull String endpoint) {
+    public AliyunSLSLogPutter(@NotNull String accessKeyId, @NotNull String accessKeySecret, @NotNull String endpoint) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.webClient = WebClient.create(Keel.getVertx());
@@ -55,7 +56,7 @@ public class AliyunSLSLogPutter implements Closeable {
      * - A TEMPLATED STRING
      * --- Rule 1: Replace [IP] to local address;
      */
-    @Nonnull
+    @NotNull
     public static String buildSource(@Nullable String configuredSourceExpression) {
         if (configuredSourceExpression == null || configuredSourceExpression.isBlank()) {
             return "";
@@ -77,7 +78,7 @@ public class AliyunSLSLogPutter implements Closeable {
         this.webClient.close();
     }
 
-    public Future<Void> putLogs(@Nonnull String project, @Nonnull String logstore, @Nonnull LogGroup logGroup) {
+    public Future<Void> putLogs(@NotNull String project, @NotNull String logstore, @NotNull LogGroup logGroup) {
         //List<LogGroup> logGroups = logGroup.divide();
         //return Keel.asyncCallIteratively(logGroups, x -> putLogsImpl(project, logstore, x));
         return putLogsImpl(project, logstore, logGroup);
@@ -91,7 +92,7 @@ public class AliyunSLSLogPutter implements Closeable {
      * @param logGroup LogGroup to be sent
      * @return Future of void if successful, or failed future with error message
      */
-    private Future<Void> putLogsImpl(@Nonnull String project, @Nonnull String logstore, @Nonnull LogGroup logGroup) {
+    private Future<Void> putLogsImpl(@NotNull String project, @NotNull String logstore, @NotNull LogGroup logGroup) {
         String uri = String.format("/logstores/%s/shards/lb", logstore);
         String url = String.format("https://%s.%s%s", project, endpoint, uri);
 
@@ -153,7 +154,7 @@ public class AliyunSLSLogPutter implements Closeable {
      * According to Aliyun SLS API documentation, we should send LogGroupList;
      * But let's try sending just the first LogGroup to see if that works.
      */
-    private Buffer serializeLogGroup(@Nonnull LogGroup logGroup) {
+    private Buffer serializeLogGroup(@NotNull LogGroup logGroup) {
         return Buffer.buffer(logGroup.toProtobuf().toByteArray());
     }
 
@@ -162,7 +163,7 @@ public class AliyunSLSLogPutter implements Closeable {
      *
      * @return Date string in RFC1123 format
      */
-    @Nonnull
+    @NotNull
     private String getGMTDate() {
         var RFC1123_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
         SimpleDateFormat sdf = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
