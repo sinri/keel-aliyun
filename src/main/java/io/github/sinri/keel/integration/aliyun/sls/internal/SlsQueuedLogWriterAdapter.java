@@ -8,6 +8,7 @@ import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogItem;
 import io.github.sinri.keel.logger.api.log.Log;
+import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -54,10 +55,8 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
         // after initialized, do not forget to deploy it.
     }
 
-
-    @NotNull
     @Override
-    protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<Log> batch) {
+    protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<SpecificLog<?>> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
         return Keel.asyncCallIteratively(batch, eventLog -> {

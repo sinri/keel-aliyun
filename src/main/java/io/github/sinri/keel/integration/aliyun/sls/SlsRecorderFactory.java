@@ -16,6 +16,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -69,14 +70,47 @@ public class SlsRecorderFactory implements LoggerFactory {
     private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
         private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
 
-        @NotNull
+        private static Log formatLog(SpecificLog<?> specificLog) {
+            var log = new ExtendedLog();
+            log.level(specificLog.level());
+            String message = specificLog.message();
+            if (message != null) {
+                log.message(message);
+            }
+            List<String> classification = specificLog.classification();
+            if (classification != null) {
+                log.classification(classification);
+            }
+            var context = specificLog.context().toMap();
+            if (!context.isEmpty()) {
+                context.forEach(log::context);
+            }
+            Throwable exception = specificLog.exception();
+            if (exception != null) {
+                log.exception(exception);
+            }
+            Map<String, Object> extra = specificLog.extra();
+            if (!extra.isEmpty()) {
+                extra.forEach(log::extra);
+            }
+
+            return log;
+        }
+
         @Override
-        protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<Log> batch) {
+        protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<SpecificLog<?>> batch) {
             batch.forEach(item -> {
-                logRecordMap.computeIfAbsent(topic, BaseLogger::new)
-                            .recordEvent(item);
+                Logger logger = logRecordMap.computeIfAbsent(topic, s -> new BaseLogger(s, FallbackQueuedLogWriter.this));
+                logger.log(formatLog(item));
             });
             return Future.succeededFuture();
+        }
+
+        private static class ExtendedLog extends Log {
+            @Override
+            public @NotNull Log extra(@NotNull String key, @Nullable Object value) {
+                return super.extra(key, value);
+            }
         }
     }
 }
