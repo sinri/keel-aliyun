@@ -1,10 +1,12 @@
-package io.github.sinri.keel.integration.aliyun.sls;
+package io.github.sinri.keel.integration.aliyun.sls.internal;
 
-import io.github.sinri.keel.base.configuration.KeelConfigElement;
-import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
-import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
+import io.github.sinri.keel.base.configuration.ConfigElement;
+import io.github.sinri.keel.base.logger.metric.AbstractMetricRecorder;
+import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
+import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
+import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogItem;
 import io.github.sinri.keel.logger.api.metric.MetricRecord;
-import io.github.sinri.keel.logger.metric.AbstractMetricRecorder;
 import io.vertx.core.Future;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +25,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
 
     public SlsMetricRecorder() throws AliyunSLSDisabled {
         super();
-        KeelConfigElement extract = Keel.getConfiguration().extract("aliyun", "sls_metric");
+        ConfigElement extract = Keel.getConfiguration().extract("aliyun", "sls_metric");
         if (extract == null) {
             throw new AliyunSLSDisabled();
         }

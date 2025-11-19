@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
 
-import io.github.sinri.keel.base.configuration.KeelConfigElement;
+import io.github.sinri.keel.base.configuration.ConfigElement;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @since 2.1.0
  */
-public class AliyunSlsConfigElement extends KeelConfigElement {
+public class AliyunSlsConfigElement extends ConfigElement {
 
     // Configuration keys
     private static final String CONFIG_KEY_DISABLED = "disabled";
@@ -20,7 +20,7 @@ public class AliyunSlsConfigElement extends KeelConfigElement {
     private static final String CONFIG_KEY_ACCESS_KEY_ID = "accessKeyId";
     private static final String CONFIG_KEY_ACCESS_KEY_SECRET = "accessKeySecret";
 
-    public AliyunSlsConfigElement(@NotNull KeelConfigElement another) {
+    public AliyunSlsConfigElement(@NotNull ConfigElement another) {
         super(another);
     }
 

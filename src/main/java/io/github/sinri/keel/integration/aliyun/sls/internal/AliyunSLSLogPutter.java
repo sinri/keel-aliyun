@@ -1,11 +1,11 @@
-package io.github.sinri.keel.integration.aliyun.sls;
+package io.github.sinri.keel.integration.aliyun.sls.internal;
 
-import io.github.sinri.keel.base.utils.DigestUtils;
-import io.github.sinri.keel.base.utils.NetUtils;
-import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
-import io.github.sinri.keel.integration.aliyun.sls.protocol.Lz4Utils;
-import io.github.sinri.keel.logger.api.event.EventRecorder;
-import io.github.sinri.keel.logger.factory.StdoutRecorderFactory;
+import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
+import io.github.sinri.keel.core.utils.DigestUtils;
+import io.github.sinri.keel.core.utils.NetUtils;
+import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.Lz4Utils;
+import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
@@ -38,15 +38,15 @@ public class AliyunSLSLogPutter implements Closeable {
     private final WebClient webClient;
     @NotNull
     private final String endpoint;
-    private final EventRecorder eventRecorder;
+    private final Logger logger;
 
     public AliyunSLSLogPutter(@NotNull String accessKeyId, @NotNull String accessKeySecret, @NotNull String endpoint) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.webClient = WebClient.create(Keel.getVertx());
         this.endpoint = endpoint;
-        this.eventRecorder = StdoutRecorderFactory.getInstance()
-                                                  .createEventRecorder(AliyunSLSLogPutter.class.getName());
+        this.logger = StdoutLoggerFactory.getInstance()
+                                         .createLogger(AliyunSLSLogPutter.class.getName());
     }
 
     /**
@@ -64,8 +64,8 @@ public class AliyunSLSLogPutter implements Closeable {
         // Rule 1: Replace [IP] to local address
         String localHostAddress = NetUtils.getLocalHostAddress();
         if (localHostAddress == null) {
-            StdoutRecorderFactory.getInstance()
-                                 .createEventRecorder(AliyunSLSLogPutter.class.getName())
+            StdoutLoggerFactory.getInstance()
+                               .createLogger(AliyunSLSLogPutter.class.getName())
                                  .warning("Could not get local host address for SLS source!");
             return "";
         }
@@ -74,7 +74,7 @@ public class AliyunSLSLogPutter implements Closeable {
 
     @Override
     public void close() {
-        eventRecorder.debug("Closing AliyunSLSLogPutter web client");
+        logger.debug("Closing AliyunSLSLogPutter web client");
         this.webClient.close();
     }
 
@@ -138,13 +138,13 @@ public class AliyunSLSLogPutter implements Closeable {
                       .compose(bufferHttpResponse -> {
                           if (bufferHttpResponse.statusCode() != 200) {
                               // System.out.println("write to sls: 200");
-                              eventRecorder.error("put log failed [" + bufferHttpResponse.statusCode() + "] "
+                              logger.error("put log failed [" + bufferHttpResponse.statusCode() + "] "
                                       + bufferHttpResponse.bodyAsString());
                           }
                           return Future.succeededFuture();
                       })
                       .recover(throwable -> {
-                          eventRecorder.exception(throwable, "put log failed [X]");
+                          logger.exception(throwable, "put log failed [X]");
                           return Future.succeededFuture();
                       })
                       .mapEmpty();

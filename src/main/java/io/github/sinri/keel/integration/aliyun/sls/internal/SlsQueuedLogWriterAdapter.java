@@ -1,11 +1,13 @@
-package io.github.sinri.keel.integration.aliyun.sls;
+package io.github.sinri.keel.integration.aliyun.sls.internal;
 
-import io.github.sinri.keel.base.configuration.KeelConfigElement;
+import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.base.json.JsonifiedThrowable;
-import io.github.sinri.keel.integration.aliyun.sls.entity.LogGroup;
-import io.github.sinri.keel.integration.aliyun.sls.entity.LogItem;
-import io.github.sinri.keel.logger.api.event.EventRecord;
-import io.github.sinri.keel.logger.consumer.QueuedTopicRecordConsumer;
+import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
+import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
+import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
+import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
+import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogItem;
+import io.github.sinri.keel.logger.api.log.Log;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -18,21 +20,21 @@ import java.util.concurrent.atomic.AtomicReference;
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 
-public class SlsQueuedTopicRecordConsumer extends QueuedTopicRecordConsumer {
+public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
     private final int bufferSize;
     @NotNull
     private final AliyunSLSLogPutter logPutter;
 
-    public SlsQueuedTopicRecordConsumer() throws AliyunSLSDisabled {
+    public SlsQueuedLogWriterAdapter() throws AliyunSLSDisabled {
         this(128);
     }
 
-    public SlsQueuedTopicRecordConsumer(int bufferSize) throws AliyunSLSDisabled {
+    public SlsQueuedLogWriterAdapter(int bufferSize) throws AliyunSLSDisabled {
         this.bufferSize = bufferSize;
 
-        KeelConfigElement extract = Keel.getConfiguration().extract("aliyun", "sls");
+        ConfigElement extract = Keel.getConfiguration().extract("aliyun", "sls");
         if (extract == null) {
             throw new AliyunSLSDisabled();
         }
@@ -51,7 +53,7 @@ public class SlsQueuedTopicRecordConsumer extends QueuedTopicRecordConsumer {
 
     @NotNull
     @Override
-    protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<EventRecord> batch) {
+    protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<Log> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
         return Keel.asyncCallIteratively(batch, eventLog -> {
@@ -59,20 +61,20 @@ public class SlsQueuedTopicRecordConsumer extends QueuedTopicRecordConsumer {
                        LogItem logItem = new LogItem(timeInSec);
 
                        String name = eventLog.level().name();
-                       logItem.addContent(EventRecord.MapKeyLevel, name);
-                       logItem.addContent(EventRecord.MapKeyMessage, eventLog.message());
+                       logItem.addContent(Log.MapKeyLevel, name);
+                       logItem.addContent(Log.MapKeyMessage, eventLog.message());
                        List<String> classification = eventLog.classification();
                        if (classification != null && !classification.isEmpty()) {
-                           logItem.addContent(EventRecord.MapKeyClassification, new JsonArray(classification).encode());
+                           logItem.addContent(Log.MapKeyClassification, new JsonArray(classification).encode());
                        }
                        Throwable exception = eventLog.exception();
                        if (exception != null) {
-                           logItem.addContent(EventRecord.MapKeyException, JsonifiedThrowable.wrap(exception)
+                           logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
                                                                                              .toJsonExpression());
                        }
                        Map<String, Object> context = eventLog.context().toMap();
                        if (!context.isEmpty()) {
-                           logItem.addContent(EventRecord.MapKeyContext, new JsonObject(context).encode());
+                           logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
                        }
                        Map<String, Object> extra = eventLog.extra();
                        if (!context.isEmpty()) {

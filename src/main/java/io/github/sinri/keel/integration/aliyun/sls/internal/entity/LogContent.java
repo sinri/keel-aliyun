@@ -1,7 +1,7 @@
-package io.github.sinri.keel.integration.aliyun.sls.entity;
+package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
-import io.github.sinri.keel.integration.aliyun.sls.protocol.LogEntityDescriptors;
+import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
 
 /**
  * @see <a href=

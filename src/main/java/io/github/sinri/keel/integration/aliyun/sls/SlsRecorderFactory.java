@@ -1,13 +1,16 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
-import io.github.sinri.keel.logger.api.consumer.TopicRecordConsumer;
-import io.github.sinri.keel.logger.api.event.BaseEventRecorder;
-import io.github.sinri.keel.logger.api.event.EventRecord;
-import io.github.sinri.keel.logger.api.event.EventRecorder;
-import io.github.sinri.keel.logger.api.factory.RecorderFactory;
-import io.github.sinri.keel.logger.api.issue.IssueRecord;
-import io.github.sinri.keel.logger.api.issue.IssueRecorder;
-import io.github.sinri.keel.logger.consumer.QueuedTopicRecordConsumer;
+import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
+import io.github.sinri.keel.integration.aliyun.sls.internal.SlsIssueRecorder;
+import io.github.sinri.keel.integration.aliyun.sls.internal.SlsLogger;
+import io.github.sinri.keel.integration.aliyun.sls.internal.SlsQueuedLogWriterAdapter;
+import io.github.sinri.keel.logger.api.adapter.LogWriterAdapter;
+import io.github.sinri.keel.logger.api.factory.LoggerFactory;
+import io.github.sinri.keel.logger.api.log.Log;
+import io.github.sinri.keel.logger.api.log.SpecificLog;
+import io.github.sinri.keel.logger.api.logger.BaseLogger;
+import io.github.sinri.keel.logger.api.logger.Logger;
+import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
@@ -18,49 +21,45 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-public class SlsRecorderFactory implements RecorderFactory {
-    private static final SlsRecorderFactory INSTANCE = new SlsRecorderFactory();
-    private final QueuedTopicRecordConsumer consumer;
+public class SlsRecorderFactory implements LoggerFactory {
+    private final QueuedLogWriterAdapter adapter;
 
-    private SlsRecorderFactory() {
-        QueuedTopicRecordConsumer tempWriter;
+    public SlsRecorderFactory() {
+        QueuedLogWriterAdapter tempWriter;
         try {
-            tempWriter = new SlsQueuedTopicRecordConsumer();
+            tempWriter = new SlsQueuedLogWriterAdapter();
             tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
         } catch (AliyunSLSDisabled e) {
             System.err.println("Aliyun SLS Disabled, fallback to FallbackQueuedLogWriter");
             tempWriter = new FallbackQueuedLogWriter();
         }
-        this.consumer = tempWriter;
+        this.adapter = tempWriter;
     }
 
-    public static SlsRecorderFactory getInstance() {
-        return INSTANCE;
+
+    @Override
+    public Logger createLogger(@NotNull String topic) {
+        return new SlsLogger(topic, adapter);
     }
 
     @Override
-    public EventRecorder createEventRecorder(@NotNull String topic) {
-        return new SlsEventRecorder(topic, consumer);
+    public LogWriterAdapter sharedAdapter() {
+        return adapter;
     }
 
     @Override
-    public TopicRecordConsumer sharedTopicRecordConsumer() {
-        return consumer;
+    public <L extends SpecificLog<L>> SpecificLogger<L> createLogger(@NotNull String topic, @NotNull Supplier<L> issueRecordSupplier) {
+        return new SlsIssueRecorder<>(topic, issueRecordSupplier, adapter);
     }
 
-    @Override
-    public <L extends IssueRecord<L>> IssueRecorder<L> createIssueRecorder(@NotNull String topic, @NotNull Supplier<L> issueRecordSupplier) {
-        return new SlsIssueRecorder<>(topic, issueRecordSupplier, consumer);
-    }
-
-    private static class FallbackQueuedLogWriter extends QueuedTopicRecordConsumer {
-        private final Map<String, EventRecorder> logRecordMap = new ConcurrentHashMap<>();
+    private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
+        private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
 
         @NotNull
         @Override
-        protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<EventRecord> batch) {
+        protected Future<Void> processLogRecords(@NotNull String topic, @NotNull List<Log> batch) {
             batch.forEach(item -> {
-                logRecordMap.computeIfAbsent(topic, BaseEventRecorder::new)
+                logRecordMap.computeIfAbsent(topic, BaseLogger::new)
                             .recordEvent(item);
             });
             return Future.succeededFuture();
