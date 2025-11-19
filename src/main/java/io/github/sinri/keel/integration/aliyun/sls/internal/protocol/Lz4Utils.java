@@ -10,9 +10,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * LZ4压缩工具类
  * <p>
- * 自3.0.0.1，使用ThreadLocal缓冲区池优化内存分配，减少GC压力。每个线程维护自己的缓冲区，避免线程竞争的同时提供内存复用。
+ * 使用ThreadLocal缓冲区池优化内存分配，减少GC压力。每个线程维护自己的缓冲区，避免线程竞争的同时提供内存复用。
  *
- * @since 2.1.0
+ * @since 5.0.0
  */
 public final class Lz4Utils {
     static final LZ4Compressor compressor = LZ4Factory.fastestInstance().fastCompressor();
@@ -47,8 +47,7 @@ public final class Lz4Utils {
      * @deprecated as of 3.0.0.1, renamed from original {@link #compress(byte[])} and will be removed in a future release
      */
     @Deprecated
-    @NotNull
-    static byte[] compressLegacy(@Nullable byte[] srcBytes) {
+    static byte @NotNull [] compressLegacy(byte @Nullable [] srcBytes) {
         if (srcBytes == null || srcBytes.length == 0) {
             return new byte[0];
         }
@@ -70,8 +69,7 @@ public final class Lz4Utils {
      * @return 压缩后的字节数组
      * @since 3.0.0.1
      */
-    @NotNull
-    public static byte[] compress(@Nullable byte[] srcBytes) {
+    public static byte @NotNull [] compress(byte @Nullable [] srcBytes) {
         if (srcBytes == null || srcBytes.length == 0) {
             return new byte[0];
         }
@@ -98,12 +96,9 @@ public final class Lz4Utils {
      */
     private static class BufferPool {
         private static final int BASE_BUFFER_SIZE = 10 * 1024 * 1024;
-        @NotNull
-        private final byte[] fixedBuffer;
-        @NotNull
-        private final byte[] emptyBuffer;
-        @NotNull
-        private byte[] tempBuffer;
+        private final byte @NotNull [] fixedBuffer;
+        private final byte @NotNull [] emptyBuffer;
+        private byte @NotNull [] tempBuffer;
         private long tempBirth;
 
         BufferPool() {

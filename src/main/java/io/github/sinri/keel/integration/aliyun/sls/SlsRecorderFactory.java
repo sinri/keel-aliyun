@@ -4,6 +4,7 @@ import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsIssueRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsLogger;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsQueuedLogWriterAdapter;
+import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.adapter.LogWriterAdapter;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.log.Log;
@@ -21,6 +22,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
+/**
+ * 基于阿里云日志服务的日志记录器工厂。
+ * <p>
+ * 在确保配置加载完成之后再新建实例。
+ *
+ * @since 5.0.0
+ */
 public class SlsRecorderFactory implements LoggerFactory {
     private final QueuedLogWriterAdapter adapter;
 
@@ -28,14 +36,20 @@ public class SlsRecorderFactory implements LoggerFactory {
         QueuedLogWriterAdapter tempWriter;
         try {
             tempWriter = new SlsQueuedLogWriterAdapter();
-            tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
         } catch (AliyunSLSDisabled e) {
-            System.err.println("Aliyun SLS Disabled, fallback to FallbackQueuedLogWriter");
-            tempWriter = new FallbackQueuedLogWriter();
+            tempWriter = buildFallbackQueuedLogWriter();
+            tempWriter.accept(getClass().getName(), new Log()
+                    .level(LogLevel.WARNING)
+                    .message("Aliyun SLS Disabled, fallback to " + tempWriter.getClass().getName()));
         }
+        tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
         this.adapter = tempWriter;
     }
 
+    @NotNull
+    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter() {
+        return new FallbackQueuedLogWriter();
+    }
 
     @Override
     public Logger createLogger(@NotNull String topic) {

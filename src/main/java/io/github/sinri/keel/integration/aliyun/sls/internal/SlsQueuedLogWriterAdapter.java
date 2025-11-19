@@ -19,7 +19,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
-
+/**
+ * 基于队列处理的持久性日志写入适配器实现，将日志写入阿里云日志服务中。
+ *
+ * @since 5.0.0
+ */
 public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;

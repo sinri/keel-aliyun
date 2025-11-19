@@ -16,7 +16,11 @@ import java.util.TreeMap;
 
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
-
+/**
+ * 基于阿里云日志服务中的时序日志服务的定量指标记录器实现。
+ *
+ * @since 5.0.0
+ */
 public class SlsMetricRecorder extends AbstractMetricRecorder {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;

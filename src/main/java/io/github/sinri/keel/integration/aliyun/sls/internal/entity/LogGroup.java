@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * @see <a
  *         href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-loggroup?spm=a2c4g.11186623.0.0.1dde4941qHi34T">LogGroup实体格式定义</a>
- * @since 2.1.0
+ * @since 5.0.0
  */
 public class LogGroup {
     final static long maxSizeBytes = 5L * 1024 * 1024; // 5MB limit

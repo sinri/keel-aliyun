@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @since 2.1.0
+ * @since 5.0.0
  * @deprecated 阿里云的SLS有这个定义，但API里没有用到
  */
 @Deprecated(since = "3.0.0.2", forRemoval = true)

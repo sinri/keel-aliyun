@@ -7,7 +7,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
- * @since 2.1.0
+ * 阿里云日志服务相关配置节点。
+ *
+ * @since 5.0.0
  */
 public class AliyunSlsConfigElement extends ConfigElement {
 

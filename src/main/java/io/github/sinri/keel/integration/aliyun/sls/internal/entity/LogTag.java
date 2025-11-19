@@ -6,7 +6,7 @@ import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDe
 /**
  * @see <a
  *         href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-logtag">LogTag</a>
- * @since 2.1.0
+ * @since 5.0.0
  */
 public class LogTag {
     private String key;

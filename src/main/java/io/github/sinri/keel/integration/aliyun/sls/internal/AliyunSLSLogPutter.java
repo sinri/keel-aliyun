@@ -27,7 +27,9 @@ import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 
 /**
- * @since 2.1.0
+ * 阿里云日志服务上传 API 封装类。
+ *
+ * @since 5.0.0
  */
 public class AliyunSLSLogPutter implements Closeable {
     @NotNull
@@ -66,7 +68,7 @@ public class AliyunSLSLogPutter implements Closeable {
         if (localHostAddress == null) {
             StdoutLoggerFactory.getInstance()
                                .createLogger(AliyunSLSLogPutter.class.getName())
-                                 .warning("Could not get local host address for SLS source!");
+                               .warning("Could not get local host address for SLS source!");
             return "";
         }
         return configuredSourceExpression.replaceAll("\\[IP]", localHostAddress);
