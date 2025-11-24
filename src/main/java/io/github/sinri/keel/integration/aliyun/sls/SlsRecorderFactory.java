@@ -16,7 +16,6 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -71,30 +70,11 @@ public class SlsRecorderFactory implements LoggerFactory {
         private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
 
         private static Log formatLog(SpecificLog<?> specificLog) {
-            var log = new ExtendedLog();
-            log.level(specificLog.level());
-            String message = specificLog.message();
-            if (message != null) {
-                log.message(message);
+            if (specificLog instanceof Log log) {
+                return log;
+            } else {
+                return new Log(specificLog);
             }
-            List<String> classification = specificLog.classification();
-            if (classification != null) {
-                log.classification(classification);
-            }
-            var context = specificLog.context().toMap();
-            if (!context.isEmpty()) {
-                context.forEach(log::context);
-            }
-            Throwable exception = specificLog.exception();
-            if (exception != null) {
-                log.exception(exception);
-            }
-            Map<String, Object> extra = specificLog.extra();
-            if (!extra.isEmpty()) {
-                extra.forEach(log::extra);
-            }
-
-            return log;
         }
 
         @Override
@@ -104,13 +84,6 @@ public class SlsRecorderFactory implements LoggerFactory {
                 logger.log(formatLog(item));
             });
             return Future.succeededFuture();
-        }
-
-        private static class ExtendedLog extends Log {
-            @Override
-            public @NotNull Log extra(@NotNull String key, @Nullable Object value) {
-                return super.extra(key, value);
-            }
         }
     }
 }
