@@ -6,8 +6,8 @@
 
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-aliyun</artifactId>
-           <!-- <version>5.0.0-SNAPSHOT</version> -->
-    <version>5.0.0-rc.8</version>
+    <!--     <version>5.0.0-SNAPSHOT</version>-->
+    <version>5.0.0-rc.9</version>
 
     <name>Keel-Aliyun</name>
     <description>
@@ -185,8 +185,14 @@
     <dependencies>
         <dependency>
             <groupId>io.github.sinri</groupId>
-            <artifactId>keel-core</artifactId>
+            <artifactId>keel-test</artifactId>
             <version>5.0.0-rc.10</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.sinri</groupId>
+            <artifactId>keel-core</artifactId>
+            <version>5.0.0-rc.11</version>
         </dependency>
         <dependency>
             <groupId>org.lz4</groupId>
@@ -202,12 +208,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-web-client</artifactId>
             <version>${vertxVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.github.sinri</groupId>
-            <artifactId>keel-test</artifactId>
-            <version>5.0.0-rc.9</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
