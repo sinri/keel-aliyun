@@ -21,7 +21,9 @@ import java.util.TreeMap;
  * @since 5.0.0
  */
 public class SlsMetricRecorder extends AbstractMetricRecorder {
+    @NotNull
     private final String source;
+    @NotNull
     private final AliyunSlsConfigElement aliyunSlsConfig;
     @NotNull
     private final AliyunSLSLogPutter logPutter;
@@ -84,6 +86,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
      *
      * @return LogItem
      */
+    @NotNull
     private LogItem buildLogItem(@NotNull MetricRecord metricRecord) {
         String labelsKey = "__labels__";
         String timeKey = "__time_nano__";

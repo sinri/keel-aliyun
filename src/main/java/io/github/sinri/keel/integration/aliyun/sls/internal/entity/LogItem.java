@@ -2,6 +2,8 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,19 +12,22 @@ import java.util.List;
  * LogItem实体。
  *
  * @see <a href=
- *      "https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-logitem"
- *      >LogItem 实体格式定义</a>
+ *         "https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-logitem"
+ *         >LogItem 实体格式定义</a>
  * @since 5.0.0
  */
 public class LogItem {
     private final int time;
+    @NotNull
     private final List<LogContent> contents;
+    @Nullable
     private Integer nanoPartOfTime = null;
 
     public LogItem(int time) {
         this.time = time;
         this.contents = new ArrayList<>();
     }
+
     public LogItem(long time) {
         this.time = Math.toIntExact(time / 1000);
         this.nanoPartOfTime = (int) (time % 1000);
@@ -33,33 +38,38 @@ public class LogItem {
         return time;
     }
 
-    public List<LogContent> getContents() {
+    public @NotNull List<LogContent> getContents() {
         return contents;
     }
 
-    public LogItem addContent(LogContent content) {
+    @NotNull
+    public LogItem addContent(@NotNull LogContent content) {
         contents.add(content);
         return this;
     }
 
-    public LogItem addContent(String key, String value) {
+    @NotNull
+    public LogItem addContent(@NotNull String key, @NotNull String value) {
         contents.add(new LogContent(key, value));
         return this;
     }
 
+    @Nullable
     public Integer getNanoPartOfTime() {
         return nanoPartOfTime;
     }
 
-    public LogItem setNanoPartOfTime(Integer nanoPartOfTime) {
+    @NotNull
+    public LogItem setNanoPartOfTime(@Nullable Integer nanoPartOfTime) {
         this.nanoPartOfTime = nanoPartOfTime;
         return this;
     }
 
+    @NotNull
     public DynamicMessage toProtobuf() {
         var logDescriptor = LogEntityDescriptors.getInstance().getLogDescriptor();
         DynamicMessage.Builder builder = DynamicMessage.newBuilder(logDescriptor)
-                .setField(logDescriptor.findFieldByName("Time"), time);
+                                                       .setField(logDescriptor.findFieldByName("Time"), time);
         contents.forEach(
                 content -> builder.addRepeatedField(logDescriptor.findFieldByName("Contents"), content.toProtobuf()));
         if (nanoPartOfTime != null) {
@@ -75,9 +85,8 @@ public class LogItem {
      * in the content list. If the list is empty, the method returns 0.
      *
      * @return The total probable size of all log contents in bytes.
-     * @since 3.0.0
      */
-    public Integer getProbableSize() {
+    public int getProbableSize() {
         int sum = 0;
         for (int i = 0; i < getContents().size(); i++) {
             LogContent content = getContents().get(i);

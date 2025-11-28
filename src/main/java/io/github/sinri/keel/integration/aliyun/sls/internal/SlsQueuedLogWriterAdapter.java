@@ -25,7 +25,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * @since 5.0.0
  */
 public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
+    @NotNull
     private final String source;
+    @NotNull
     private final AliyunSlsConfigElement aliyunSlsConfig;
     private final int bufferSize;
     @NotNull
@@ -115,6 +117,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                    });
     }
 
+    @NotNull
     private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
         return new AliyunSLSLogPutter(
                 aliyunSlsConfig.getAccessKeyId(),

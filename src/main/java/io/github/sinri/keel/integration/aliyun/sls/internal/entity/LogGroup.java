@@ -2,6 +2,8 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +15,13 @@ import java.util.List;
  */
 public class LogGroup {
     final static long maxSizeBytes = 5L * 1024 * 1024; // 5MB limit
+    @Nullable
     private final String topic;
+    @Nullable
     private final String source;
+    @NotNull
     private final List<LogTag> logTags;
+    @NotNull
     private final List<LogItem> logItems;
     private int probableSize = 0;
 
@@ -25,7 +31,7 @@ public class LogGroup {
      * @param topic  The log topic, user-defined field for distinguishing different types of log data
      * @param source The log source, e.g., IP address of the machine that generated the log
      */
-    public LogGroup(String topic, String source) {
+    public LogGroup(@Nullable String topic, @Nullable String source) {
         this.topic = topic;
         this.source = source;
         this.logTags = new ArrayList<>();
@@ -37,7 +43,7 @@ public class LogGroup {
      *
      * @return The log topic
      */
-    public String getTopic() {
+    public @Nullable String getTopic() {
         return topic;
     }
 
@@ -46,7 +52,7 @@ public class LogGroup {
      *
      * @return The log source
      */
-    public String getSource() {
+    public @Nullable String getSource() {
         return source;
     }
 
@@ -55,7 +61,7 @@ public class LogGroup {
      *
      * @return The list of log tags
      */
-    public List<LogTag> getLogTags() {
+    public @NotNull List<LogTag> getLogTags() {
         return logTags;
     }
 
@@ -65,12 +71,14 @@ public class LogGroup {
      * @param logTags The list of log tags to set
      * @return this instance for chaining
      */
-    public LogGroup addLogTags(List<LogTag> logTags) {
+    @NotNull
+    public LogGroup addLogTags(@NotNull List<LogTag> logTags) {
         this.logTags.addAll(logTags);
         return this;
     }
 
-    public LogGroup addLogTag(LogTag logTag) {
+    @NotNull
+    public LogGroup addLogTag(@NotNull LogTag logTag) {
         this.logTags.add(logTag);
         return this;
     }
@@ -80,6 +88,7 @@ public class LogGroup {
      *
      * @return The list of log items
      */
+    @NotNull
     public List<LogItem> getLogItems() {
         return logItems;
     }
@@ -90,7 +99,8 @@ public class LogGroup {
      * @param logItems The list of log items to set
      * @return this instance for chaining
      */
-    public LogGroup addLogItems(List<LogItem> logItems) {
+    @NotNull
+    public LogGroup addLogItems(@NotNull List<LogItem> logItems) {
         for (var logItem : logItems) {
             addLogItem(logItem);
         }
@@ -98,12 +108,14 @@ public class LogGroup {
         return this;
     }
 
-    public LogGroup addLogItem(LogItem logItem) {
+    @NotNull
+    public LogGroup addLogItem(@NotNull LogItem logItem) {
         this.logItems.add(logItem);
         probableSize += logItem.getProbableSize();
         return this;
     }
 
+    @NotNull
     public DynamicMessage toProtobuf() {
         var logGroupDescriptor = LogEntityDescriptors.getInstance().getLogGroupDescriptor();
         var builder = DynamicMessage.newBuilder(logGroupDescriptor);
@@ -119,76 +131,7 @@ public class LogGroup {
     }
 
     /**
-     * 阿里云日志服务要求日志组中每条日志下的Value部分建议不超过1MB，而写入日志的接口每一次可以接受的原始数据大小不超过10MB。
-     * 所以需要将日志组拆分成多个日志组，尽量确保每次调用不超标。
-     * <p>
-     * 拆分规则为仅看日志组里的Value部分字节数来计算，在日志组内Value已达到5MB时即拆分。
-     *
-     * @return 拆分后的日志组列表
-     * @deprecated 在上层直接divide，而不是在
-     */
-    @Deprecated(since = "3.0.0.2", forRemoval = true)
-    public List<LogGroup> divide() {
-        final List<LogItem> logItems = getLogItems();
-
-        // Early exit if no items to process
-        if (logItems.isEmpty()) {
-            return List.of(this);
-        }
-
-        // Use divideLogItemsParts to get the divided log item groups
-        List<List<LogItem>> logItemParts = divideLogItemsParts();
-
-        // Convert each part to a LogGroup
-        final List<LogGroup> result = new ArrayList<>();
-        final List<LogTag> sharedLogTags = getLogTags(); // Cache to avoid repeated calls
-
-        for (List<LogItem> part : logItemParts) {
-            LogGroup group = new LogGroup(getTopic(), getSource());
-            group.addLogTags(sharedLogTags);
-            group.addLogItems(part);
-            result.add(group);
-        }
-
-        return result;
-    }
-
-    @Deprecated(since = "3.0.0.2", forRemoval = true)
-    private List<List<LogItem>> divideLogItemsParts() {
-        final List<LogItem> logItems = getLogItems();
-        if (logItems.isEmpty()) {
-            return List.of();
-        }
-
-        final List<List<LogItem>> parts = new ArrayList<>();
-        List<LogItem> part = new ArrayList<>();
-        long cache = 0;
-
-        for (LogItem logItem : logItems) {
-            long itemSize = logItem.getProbableSize();
-
-            // Check if adding this item would exceed the limit
-            if (cache > 0 && (cache + itemSize) > maxSizeBytes) {
-                // Current part is full, start a new one
-                parts.add(part);
-                part = new ArrayList<>();
-                cache = 0;
-            }
-
-            // Add item to current part
-            part.add(logItem);
-            cache += itemSize;
-        }
-
-        // Add the last part if it has items
-        parts.add(part);
-
-        return parts;
-    }
-
-    /**
      * @return 缓存好的大约尺寸
-     * @since 3.0.0.2
      */
     public int getProbableSize() {
         return probableSize;

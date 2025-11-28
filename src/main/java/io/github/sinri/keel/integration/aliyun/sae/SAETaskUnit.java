@@ -3,6 +3,7 @@ package io.github.sinri.keel.integration.aliyun.sae;
 import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.metric.MetricRecorder;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -16,6 +17,7 @@ public interface SAETaskUnit {
      *
      * @return 日志记录器工厂实例
      */
+    @NotNull
     default LoggerFactory getLoggerFactory() {
         return StdoutLoggerFactory.getInstance();
     }
@@ -37,7 +39,8 @@ public interface SAETaskUnit {
      *
      * @param throwable 导致运行非正常结束的异常
      */
-    void handleError(Throwable throwable);
+    void handleError(@NotNull Throwable throwable);
 
+    @NotNull
     SAETaskUnitEnvReader getEnvReader();
 }

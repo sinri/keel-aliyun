@@ -21,7 +21,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static io.github.sinri.keel.base.KeelInstance.Keel;
 
@@ -40,6 +39,7 @@ public class AliyunSLSLogPutter implements Closeable {
     private final WebClient webClient;
     @NotNull
     private final String endpoint;
+    @NotNull
     private final Logger logger;
 
     public AliyunSLSLogPutter(@NotNull String accessKeyId, @NotNull String accessKeySecret, @NotNull String endpoint) {
@@ -80,9 +80,8 @@ public class AliyunSLSLogPutter implements Closeable {
         this.webClient.close();
     }
 
+    @NotNull
     public Future<Void> putLogs(@NotNull String project, @NotNull String logstore, @NotNull LogGroup logGroup) {
-        //List<LogGroup> logGroups = logGroup.divide();
-        //return Keel.asyncCallIteratively(logGroups, x -> putLogsImpl(project, logstore, x));
         return putLogsImpl(project, logstore, logGroup);
     }
 
@@ -92,8 +91,9 @@ public class AliyunSLSLogPutter implements Closeable {
      * @param project  Project name
      * @param logstore Logstore name
      * @param logGroup LogGroup to be sent
-     * @return Future of void if successful, or failed future with error message
+     * @return Future of void if successful, or failed future with an error message
      */
+    @NotNull
     private Future<Void> putLogsImpl(@NotNull String project, @NotNull String logstore, @NotNull LogGroup logGroup) {
         String uri = String.format("/logstores/%s/shards/lb", logstore);
         String url = String.format("https://%s.%s%s", project, endpoint, uri);
@@ -156,6 +156,7 @@ public class AliyunSLSLogPutter implements Closeable {
      * According to Aliyun SLS API documentation, we should send LogGroupList;
      * But let's try sending just the first LogGroup to see if that works.
      */
+    @NotNull
     private Buffer serializeLogGroup(@NotNull LogGroup logGroup) {
         return Buffer.buffer(logGroup.toProtobuf().toByteArray());
     }
@@ -186,12 +187,12 @@ public class AliyunSLSLogPutter implements Closeable {
      * @return 计算得到的签名字符串
      */
     private String calculateSignature(
-            String method,
+            @NotNull String method,
             @Nullable Buffer body,
             @Nullable String contentType,
-            String date,
-            Map<String, String> headers,
-            String uri,
+            @NotNull String date,
+            @NotNull Map<String, String> headers,
+            @NotNull String uri,
             @Nullable String queries
     ) {
         StringBuilder sb = new StringBuilder();
@@ -212,7 +213,7 @@ public class AliyunSLSLogPutter implements Closeable {
         List<String> headerLines = headers.keySet().stream()
                                           .filter(headerName -> headerName.startsWith("x-log-") || headerName.startsWith("x-acs-"))
                                           .sorted().map(x -> x + ":" + headers.get(x))
-                                          .collect(Collectors.toList());
+                                          .toList();
         headerLines.forEach(x -> sb.append(x).append("\n"));
 
         sb.append(uri);

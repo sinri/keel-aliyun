@@ -10,4 +10,5 @@ module io.github.sinri.keel.integration.aliyun {
 
     // Public API packages
     exports io.github.sinri.keel.integration.aliyun.sls;
+    exports io.github.sinri.keel.integration.aliyun.sae;
 }

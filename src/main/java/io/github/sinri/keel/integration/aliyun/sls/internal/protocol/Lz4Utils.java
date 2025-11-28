@@ -115,11 +115,6 @@ public final class Lz4Utils {
                 tempBuffer = new byte[bufferSize];
                 tempBirth = System.currentTimeMillis();
             }
-            //            Keel.getLogger().warning(String.format(
-            //                    "io.github.sinri.drydock.plugin.aliyun.sls.writer.protocol." +
-            //                            "Lz4Utils.BufferPool.resetTempBuffer(%d) called",
-            //                    bufferSize
-            //            ));
         }
 
         byte[] getBuffer(int requiredSize) {

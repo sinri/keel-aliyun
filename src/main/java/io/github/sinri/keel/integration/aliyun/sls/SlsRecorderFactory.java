@@ -30,6 +30,7 @@ import java.util.function.Supplier;
  * @since 5.0.0
  */
 public class SlsRecorderFactory implements LoggerFactory {
+    @NotNull
     private final QueuedLogWriterAdapter adapter;
 
     public SlsRecorderFactory() {
@@ -52,24 +53,26 @@ public class SlsRecorderFactory implements LoggerFactory {
     }
 
     @Override
-    public Logger createLogger(@NotNull String topic) {
+    public @NotNull Logger createLogger(@NotNull String topic) {
         return new SlsLogger(topic, adapter);
     }
 
     @Override
-    public LogWriterAdapter sharedAdapter() {
+    public @NotNull LogWriterAdapter sharedAdapter() {
         return adapter;
     }
 
     @Override
-    public <L extends SpecificLog<L>> SpecificLogger<L> createLogger(@NotNull String topic, @NotNull Supplier<L> issueRecordSupplier) {
+    public <L extends SpecificLog<L>> @NotNull SpecificLogger<L> createLogger(@NotNull String topic, @NotNull Supplier<L> issueRecordSupplier) {
         return new SlsIssueRecorder<>(topic, issueRecordSupplier, adapter);
     }
 
     private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
+        @NotNull
         private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
 
-        private static Log formatLog(SpecificLog<?> specificLog) {
+        @NotNull
+        private static Log formatLog(@NotNull SpecificLog<?> specificLog) {
             if (specificLog instanceof Log log) {
                 return log;
             } else {
