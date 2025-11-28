@@ -6,8 +6,25 @@
 
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-aliyun</artifactId>
-    <!--     <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.9</version>
+    <version>5.0.0-SNAPSHOT</version>
+    <!--    <version>5.0.0-rc.9</version>-->
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mavenSourcePluginVersion>3.3.1</mavenSourcePluginVersion>
+        <mavenJavadocPluginVersion>3.12.0</mavenJavadocPluginVersion>
+        <mavenCompilerPluginVersion>3.14.1</mavenCompilerPluginVersion>
+        <mavenSurefirePluginVersion>3.5.4</mavenSurefirePluginVersion>
+        <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
+        <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
+        <vertxVersion>5.0.5</vertxVersion>
+        <lz4Version>1.8.0</lz4Version>
+        <protobufVersion>4.31.1</protobufVersion>
+        <keelTestVersion>5.0.0-rc.11</keelTestVersion>
+        <keelCoreVersion>5.0.0-rc.12</keelCoreVersion>
+    </properties>
 
     <name>Keel-Aliyun</name>
     <description>
@@ -36,18 +53,6 @@
         </developer>
     </developers>
 
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mavenSourcePluginVersion>3.3.1</mavenSourcePluginVersion>
-        <mavenJavadocPluginVersion>3.12.0</mavenJavadocPluginVersion>
-        <mavenCompilerPluginVersion>3.14.1</mavenCompilerPluginVersion>
-        <mavenSurefirePluginVersion>3.5.4</mavenSurefirePluginVersion>
-        <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
-        <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
-        <vertxVersion>5.0.5</vertxVersion>
-    </properties>
 
     <build>
         <resources>
@@ -186,23 +191,23 @@
         <dependency>
             <groupId>io.github.sinri</groupId>
             <artifactId>keel-test</artifactId>
-            <version>5.0.0-rc.10</version>
+            <version>${keelTestVersion}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.github.sinri</groupId>
             <artifactId>keel-core</artifactId>
-            <version>5.0.0-rc.11</version>
+            <version>${keelCoreVersion}</version>
         </dependency>
         <dependency>
             <groupId>org.lz4</groupId>
             <artifactId>lz4-java</artifactId>
-            <version>1.8.0</version>
+            <version>${lz4Version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
-            <version>4.31.1</version>
+            <version>${protobufVersion}</version>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>

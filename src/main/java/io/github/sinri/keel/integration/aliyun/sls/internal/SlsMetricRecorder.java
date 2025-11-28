@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
+import io.github.sinri.keel.base.configuration.ConfigTree;
 import io.github.sinri.keel.base.logger.metric.AbstractMetricRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
@@ -14,8 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static io.github.sinri.keel.base.KeelInstance.Keel;
-
 /**
  * 基于阿里云日志服务中的时序日志服务的定量指标记录器实现。
  *
@@ -26,6 +25,8 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     private final AliyunSlsConfigElement aliyunSlsConfig;
     @NotNull
     private final AliyunSLSLogPutter logPutter;
+    private final @NotNull String project;
+    private final @NotNull String logstore;
 
     public SlsMetricRecorder() throws AliyunSLSDisabled {
         super();
@@ -38,14 +39,21 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
             throw new AliyunSLSDisabled();
         }
 
+
         this.source = AliyunSLSLogPutter.buildSource(aliyunSlsConfig.getSource());
-        this.logPutter = this.buildProducer();
+        try {
+            this.project = aliyunSlsConfig.getProject();
+            this.logstore = aliyunSlsConfig.getLogstore();
+            this.logPutter = this.buildProducer();
+        } catch (ConfigTree.NotConfiguredException e) {
+            throw new AliyunSLSDisabled(e.getMessage());
+        }
 
         // after initialized, do not forget to deploy it.
     }
 
     @NotNull
-    private AliyunSLSLogPutter buildProducer() {
+    private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
         return new AliyunSLSLogPutter(
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
@@ -65,12 +73,9 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
             logGroup.addLogItem(logItem);
         });
 
-        return logPutter.putLogs(
-                aliyunSlsConfig.getProject(),
-                aliyunSlsConfig.getLogstore(),
-                logGroup
-        );
+        return logPutter.putLogs(project, logstore, logGroup);
     }
+
     /**
      * metricName: the metric name, eg: http_requests_count
      * labels: labels map, eg: {'idc': 'idc1', 'ip': '192.0.2.0', 'hostname':

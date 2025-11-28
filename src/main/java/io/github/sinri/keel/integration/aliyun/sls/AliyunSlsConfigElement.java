@@ -2,7 +2,9 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
+import io.github.sinri.keel.base.configuration.ConfigTree;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -11,7 +13,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
-public class AliyunSlsConfigElement extends ConfigElement {
+public class AliyunSlsConfigElement extends ConfigTree {
 
     // Configuration keys
     private static final String CONFIG_KEY_DISABLED = "disabled";
@@ -27,30 +29,44 @@ public class AliyunSlsConfigElement extends ConfigElement {
     }
 
     public final boolean isDisabled() {
-        return Boolean.TRUE.equals(readBoolean(List.of(CONFIG_KEY_DISABLED)));
+        try {
+            return readBoolean(List.of(CONFIG_KEY_DISABLED));
+        } catch (NotConfiguredException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public final String getProject() {
+    @NotNull
+    public final String getProject() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_PROJECT));
     }
 
-    public final String getLogstore() {
+    @NotNull
+    public final String getLogstore() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_LOGSTORE));
     }
 
+    @Nullable
     public final String getSource() {
-        return readString(List.of(CONFIG_KEY_SOURCE));
+        try {
+            return readString(List.of(CONFIG_KEY_SOURCE));
+        } catch (NotConfiguredException e) {
+            return null;
+        }
     }
 
-    public final String getEndpoint() {
+    @NotNull
+    public final String getEndpoint() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_ENDPOINT));
     }
 
-    public final String getAccessKeyId() {
+    @NotNull
+    public final String getAccessKeyId() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_ACCESS_KEY_ID));
     }
 
-    public final String getAccessKeySecret() {
+    @NotNull
+    public final String getAccessKeySecret() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_ACCESS_KEY_SECRET));
     }
 }

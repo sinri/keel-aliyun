@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
+import io.github.sinri.keel.base.configuration.ConfigTree;
 import io.github.sinri.keel.base.json.JsonifiedThrowable;
 import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
@@ -18,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.github.sinri.keel.base.KeelInstance.Keel;
-
 /**
  * 基于队列处理的持久性日志写入适配器实现，将日志写入阿里云日志服务中。
  *
@@ -31,6 +30,8 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     private final int bufferSize;
     @NotNull
     private final AliyunSLSLogPutter logPutter;
+    private final @NotNull String project;
+    private final @NotNull String logstore;
 
     public SlsQueuedLogWriterAdapter() throws AliyunSLSDisabled {
         this(128);
@@ -50,7 +51,13 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
         }
 
         this.source = AliyunSLSLogPutter.buildSource(aliyunSlsConfig.getSource());
-        this.logPutter = this.buildProducer();
+        try {
+            this.project = aliyunSlsConfig.getProject();
+            this.logstore = aliyunSlsConfig.getLogstore();
+            this.logPutter = this.buildProducer();
+        } catch (ConfigTree.NotConfiguredException e) {
+            throw new RuntimeException(e);
+        }
 
         // after initialized, do not forget to deploy it.
     }
@@ -73,7 +80,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                        Throwable exception = eventLog.exception();
                        if (exception != null) {
                            logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
-                                                                                             .toJsonExpression());
+                                                                                     .toJsonExpression());
                        }
                        Map<String, Object> context = eventLog.context().toMap();
                        if (!context.isEmpty()) {
@@ -89,7 +96,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                        LogGroup currentLogGroup = currentLogGroupRef.get();
                        currentLogGroup.addLogItem(logItem);
                        if (currentLogGroup.getProbableSize() > 5 * 1024 * 1024) {
-                           return this.logPutter.putLogs(aliyunSlsConfig.getProject(), aliyunSlsConfig.getLogstore(), currentLogGroup)
+                           return this.logPutter.putLogs(project, logstore, currentLogGroup)
                                                 .compose(v -> {
                                                     currentLogGroupRef.set(new LogGroup(topic, source));
                                                     return Future.succeededFuture();
@@ -101,14 +108,14 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                    .compose(v -> {
                        LogGroup currentLogGroup = currentLogGroupRef.get();
                        if (currentLogGroup.getProbableSize() > 0) {
-                           return this.logPutter.putLogs(aliyunSlsConfig.getProject(), aliyunSlsConfig.getLogstore(), currentLogGroup);
+                           return this.logPutter.putLogs(project, logstore, currentLogGroup);
                        } else {
                            return Future.succeededFuture();
                        }
                    });
     }
 
-    private AliyunSLSLogPutter buildProducer() {
+    private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
         return new AliyunSLSLogPutter(
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
