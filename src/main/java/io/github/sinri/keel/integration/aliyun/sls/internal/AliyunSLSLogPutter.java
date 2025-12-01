@@ -7,6 +7,7 @@ import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.Lz4Utils;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
@@ -21,8 +22,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static io.github.sinri.keel.base.KeelInstance.Keel;
 
 
 /**
@@ -42,10 +41,10 @@ public class AliyunSLSLogPutter implements Closeable {
     @NotNull
     private final Logger logger;
 
-    public AliyunSLSLogPutter(@NotNull String accessKeyId, @NotNull String accessKeySecret, @NotNull String endpoint) {
+    public AliyunSLSLogPutter(@NotNull Vertx vertx, @NotNull String accessKeyId, @NotNull String accessKeySecret, @NotNull String endpoint) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
-        this.webClient = WebClient.create(Keel.getVertx());
+        this.webClient = WebClient.create(vertx);
         this.endpoint = endpoint;
         this.logger = StdoutLoggerFactory.getInstance()
                                          .createLogger(AliyunSLSLogPutter.class.getName());

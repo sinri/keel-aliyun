@@ -6,8 +6,8 @@
 
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-aliyun</artifactId>
-    <!--    <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.10</version>
+    <!--        <version>5.0.0-SNAPSHOT</version>-->
+    <version>5.0.0-rc.11</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -22,8 +22,8 @@
         <vertxVersion>5.0.5</vertxVersion>
         <lz4Version>1.8.0</lz4Version>
         <protobufVersion>4.31.1</protobufVersion>
-        <keelTestVersion>5.0.0-rc.11</keelTestVersion>
-        <keelCoreVersion>5.0.0-rc.12</keelCoreVersion>
+        <keelTestVersion>5.0.0-rc.12</keelTestVersion>
+        <keelCoreVersion>5.0.0-rc.13</keelCoreVersion>
     </properties>
 
     <name>Keel-Aliyun</name>

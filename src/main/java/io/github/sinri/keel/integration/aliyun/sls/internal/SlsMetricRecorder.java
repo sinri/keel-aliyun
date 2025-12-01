@@ -1,5 +1,6 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.base.configuration.ConfigTree;
 import io.github.sinri.keel.base.logger.metric.AbstractMetricRecorder;
@@ -30,9 +31,9 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     private final @NotNull String project;
     private final @NotNull String logstore;
 
-    public SlsMetricRecorder() throws AliyunSLSDisabled {
-        super();
-        ConfigElement extract = Keel.getConfiguration().extract("aliyun", "sls_metric");
+    public SlsMetricRecorder(@NotNull Keel keel) throws AliyunSLSDisabled {
+        super(keel);
+        ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls_metric");
         if (extract == null) {
             throw new AliyunSLSDisabled();
         }
@@ -57,6 +58,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     @NotNull
     private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
         return new AliyunSLSLogPutter(
+                getVertx(),
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
                 aliyunSlsConfig.getEndpoint()

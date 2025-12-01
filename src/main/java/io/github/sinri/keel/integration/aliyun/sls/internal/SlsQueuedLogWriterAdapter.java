@@ -1,5 +1,6 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.base.configuration.ConfigTree;
 import io.github.sinri.keel.base.json.JsonifiedThrowable;
@@ -35,14 +36,15 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     private final @NotNull String project;
     private final @NotNull String logstore;
 
-    public SlsQueuedLogWriterAdapter() throws AliyunSLSDisabled {
-        this(128);
+    public SlsQueuedLogWriterAdapter(@NotNull Keel keel) throws AliyunSLSDisabled {
+        this(keel, 128);
     }
 
-    public SlsQueuedLogWriterAdapter(int bufferSize) throws AliyunSLSDisabled {
+    public SlsQueuedLogWriterAdapter(@NotNull Keel keel, int bufferSize) throws AliyunSLSDisabled {
+        super(keel);
         this.bufferSize = bufferSize;
 
-        ConfigElement extract = Keel.getConfiguration().extract("aliyun", "sls");
+        ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls");
         if (extract == null) {
             throw new AliyunSLSDisabled();
         }
@@ -68,58 +70,59 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<SpecificLog<?>> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
-        return Keel.asyncCallIteratively(batch, eventLog -> {
-                       int timeInSec = (int) (eventLog.timestamp() / 1000);
-                       LogItem logItem = new LogItem(timeInSec);
+        return keel().asyncCallIteratively(batch, eventLog -> {
+                         int timeInSec = (int) (eventLog.timestamp() / 1000);
+                         LogItem logItem = new LogItem(timeInSec);
 
-                       String name = eventLog.level().name();
-                       logItem.addContent(Log.MapKeyLevel, name);
-                       logItem.addContent(Log.MapKeyMessage, eventLog.message());
-                       List<String> classification = eventLog.classification();
-                       if (classification != null && !classification.isEmpty()) {
-                           logItem.addContent(Log.MapKeyClassification, new JsonArray(classification).encode());
-                       }
-                       Throwable exception = eventLog.exception();
-                       if (exception != null) {
-                           logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
-                                                                                     .toJsonExpression());
-                       }
-                       Map<String, Object> context = eventLog.context().toMap();
-                       if (!context.isEmpty()) {
-                           logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
-                       }
-                       Map<String, Object> extra = eventLog.extra();
-                       if (!context.isEmpty()) {
-                           extra.forEach((k, v) -> {
-                               logItem.addContent(k, v == null ? null : v.toString());
-                           });
-                       }
+                         String name = eventLog.level().name();
+                         logItem.addContent(Log.MapKeyLevel, name);
+                         logItem.addContent(Log.MapKeyMessage, eventLog.message());
+                         List<String> classification = eventLog.classification();
+                         if (classification != null && !classification.isEmpty()) {
+                             logItem.addContent(Log.MapKeyClassification, new JsonArray(classification).encode());
+                         }
+                         Throwable exception = eventLog.exception();
+                         if (exception != null) {
+                             logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
+                                                                                       .toJsonExpression());
+                         }
+                         Map<String, Object> context = eventLog.context().toMap();
+                         if (!context.isEmpty()) {
+                             logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
+                         }
+                         Map<String, Object> extra = eventLog.extra();
+                         if (!context.isEmpty()) {
+                             extra.forEach((k, v) -> {
+                                 logItem.addContent(k, v == null ? null : v.toString());
+                             });
+                         }
 
-                       LogGroup currentLogGroup = currentLogGroupRef.get();
-                       currentLogGroup.addLogItem(logItem);
-                       if (currentLogGroup.getProbableSize() > 5 * 1024 * 1024) {
-                           return this.logPutter.putLogs(project, logstore, currentLogGroup)
-                                                .compose(v -> {
-                                                    currentLogGroupRef.set(new LogGroup(topic, source));
-                                                    return Future.succeededFuture();
-                                                });
-                       } else {
-                           return Future.succeededFuture();
-                       }
-                   })
-                   .compose(v -> {
-                       LogGroup currentLogGroup = currentLogGroupRef.get();
-                       if (currentLogGroup.getProbableSize() > 0) {
-                           return this.logPutter.putLogs(project, logstore, currentLogGroup);
-                       } else {
-                           return Future.succeededFuture();
-                       }
-                   });
+                         LogGroup currentLogGroup = currentLogGroupRef.get();
+                         currentLogGroup.addLogItem(logItem);
+                         if (currentLogGroup.getProbableSize() > 5 * 1024 * 1024) {
+                             return this.logPutter.putLogs(project, logstore, currentLogGroup)
+                                                  .compose(v -> {
+                                                      currentLogGroupRef.set(new LogGroup(topic, source));
+                                                      return Future.succeededFuture();
+                                                  });
+                         } else {
+                             return Future.succeededFuture();
+                         }
+                     })
+                     .compose(v -> {
+                         LogGroup currentLogGroup = currentLogGroupRef.get();
+                         if (currentLogGroup.getProbableSize() > 0) {
+                             return this.logPutter.putLogs(project, logstore, currentLogGroup);
+                         } else {
+                             return Future.succeededFuture();
+                         }
+                     });
     }
 
     @NotNull
     private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
         return new AliyunSLSLogPutter(
+                getVertx(),
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
                 aliyunSlsConfig.getEndpoint()

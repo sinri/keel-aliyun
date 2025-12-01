@@ -1,5 +1,6 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
+import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsIssueRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsLogger;
@@ -33,12 +34,12 @@ public class SlsRecorderFactory implements LoggerFactory {
     @NotNull
     private final QueuedLogWriterAdapter adapter;
 
-    public SlsRecorderFactory() {
+    public SlsRecorderFactory(@NotNull Keel keel) {
         QueuedLogWriterAdapter tempWriter;
         try {
-            tempWriter = new SlsQueuedLogWriterAdapter();
+            tempWriter = new SlsQueuedLogWriterAdapter(keel);
         } catch (AliyunSLSDisabled e) {
-            tempWriter = buildFallbackQueuedLogWriter();
+            tempWriter = buildFallbackQueuedLogWriter(keel);
             tempWriter.accept(getClass().getName(), new Log()
                     .level(LogLevel.WARNING)
                     .message("Aliyun SLS Disabled, fallback to " + tempWriter.getClass().getName()));
@@ -48,8 +49,8 @@ public class SlsRecorderFactory implements LoggerFactory {
     }
 
     @NotNull
-    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter() {
-        return new FallbackQueuedLogWriter();
+    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter(@NotNull Keel keel) {
+        return new FallbackQueuedLogWriter(keel);
     }
 
     @Override
@@ -70,6 +71,10 @@ public class SlsRecorderFactory implements LoggerFactory {
     private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
         @NotNull
         private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
+
+        public FallbackQueuedLogWriter(@NotNull Keel keel) {
+            super(keel);
+        }
 
         @NotNull
         private static Log formatLog(@NotNull SpecificLog<?> specificLog) {
