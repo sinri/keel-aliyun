@@ -44,7 +44,14 @@ public class SlsRecorderFactory implements LoggerFactory {
                     .level(LogLevel.WARNING)
                     .message("Aliyun SLS Disabled, fallback to " + tempWriter.getClass().getName()));
         }
-        tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER));
+        tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                  .onComplete(ar -> {
+                      if (ar.failed()) {
+                          System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
+                      } else {
+                          System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
+                      }
+                  });
         this.adapter = tempWriter;
     }
 

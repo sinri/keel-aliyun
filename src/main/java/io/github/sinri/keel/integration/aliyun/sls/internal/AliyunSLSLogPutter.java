@@ -145,7 +145,7 @@ public class AliyunSLSLogPutter implements Closeable {
                           return Future.succeededFuture();
                       })
                       .recover(throwable -> {
-                          logger.exception(throwable, "put log failed [X]");
+                          logger.error(log -> log.exception(throwable).message("put log failed [X]"));
                           return Future.succeededFuture();
                       })
                       .mapEmpty();

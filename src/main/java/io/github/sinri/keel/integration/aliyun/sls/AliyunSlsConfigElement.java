@@ -32,7 +32,7 @@ public class AliyunSlsConfigElement extends ConfigTree {
         try {
             return readBoolean(List.of(CONFIG_KEY_DISABLED));
         } catch (NotConfiguredException e) {
-            throw new RuntimeException(e);
+            return false;
         }
     }
 

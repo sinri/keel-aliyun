@@ -7,7 +7,7 @@
     <groupId>io.github.sinri</groupId>
     <artifactId>keel-aliyun</artifactId>
     <!--        <version>5.0.0-SNAPSHOT</version>-->
-    <version>5.0.0-rc.17</version>
+    <version>5.0.0-rc.18</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -20,7 +20,9 @@
         <mavenGpgPluginVersion>3.2.8</mavenGpgPluginVersion>
         <nexusStagingMavenPluginVersion>1.7.0</nexusStagingMavenPluginVersion>
         <vertxVersion>5.0.5</vertxVersion>
-        <lz4Version>1.8.0</lz4Version>
+        <!-- at.yawk.lz4 -->
+        <lz4Version>1.10.1</lz4Version>
+<!--        <lz4Version>1.8.1</lz4Version>-->
         <protobufVersion>4.31.1</protobufVersion>
         <keelTestVersion>5.0.0-rc.19</keelTestVersion>
         <keelCoreVersion>5.0.0-rc.20</keelCoreVersion>
@@ -200,7 +202,8 @@
             <version>${keelCoreVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.lz4</groupId>
+            <groupId>at.yawk.lz4</groupId>
+<!--            <groupId>org.lz4</groupId>-->
             <artifactId>lz4-java</artifactId>
             <version>${lz4Version}</version>
         </dependency>
