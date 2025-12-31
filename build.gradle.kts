@@ -49,7 +49,7 @@ dependencies {
 
     // Vert.x dependencies (from module-info.java and pom.xml)
     // api("io.vertx:vertx-core:$vertxVersion")
-    api("io.vertx:vertx-web-client:$vertxVersion")
+    // api("io.vertx:vertx-web-client:$vertxVersion")
 
     // LZ4 compression (from pom.xml and module-info.java)
     implementation("at.yawk.lz4:lz4-java:$lz4Version")
