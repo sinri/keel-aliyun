@@ -185,6 +185,7 @@ public class AliyunSLSLogPutter implements Closeable {
      * @param queries     查询参数字符串，可以为 null
      * @return 计算得到的签名字符串
      */
+    @NotNull
     private String calculateSignature(
             @NotNull String method,
             @Nullable Buffer body,

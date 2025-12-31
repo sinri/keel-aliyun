@@ -2,7 +2,7 @@ package io.github.sinri.keel.integration.aliyun.sls.internal;
 
 import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.base.configuration.ConfigElement;
-import io.github.sinri.keel.base.configuration.ConfigTree;
+import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.json.JsonifiedThrowable;
 import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
@@ -59,7 +59,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
             this.project = aliyunSlsConfig.getProject();
             this.logstore = aliyunSlsConfig.getLogstore();
             this.logPutter = this.buildProducer();
-        } catch (ConfigTree.NotConfiguredException e) {
+        } catch (NotConfiguredException e) {
             throw new RuntimeException(e);
         }
 
@@ -67,7 +67,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     }
 
     @Override
-    protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<SpecificLog<?>> batch) {
+    protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<@NotNull SpecificLog<?>> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
         return getKeel().asyncCallIteratively(batch, specificLog -> {
@@ -125,7 +125,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     }
 
     @NotNull
-    private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
+    private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
                 getVertx(),
                 aliyunSlsConfig.getAccessKeyId(),

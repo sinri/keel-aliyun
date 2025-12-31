@@ -2,7 +2,7 @@ package io.github.sinri.keel.integration.aliyun.sls.internal;
 
 import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.base.configuration.ConfigElement;
-import io.github.sinri.keel.base.configuration.ConfigTree;
+import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.logger.metric.AbstractMetricRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
@@ -48,7 +48,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
             this.project = aliyunSlsConfig.getProject();
             this.logstore = aliyunSlsConfig.getLogstore();
             this.logPutter = this.buildProducer();
-        } catch (ConfigTree.NotConfiguredException e) {
+        } catch (NotConfiguredException e) {
             throw new AliyunSLSDisabled(e.getMessage());
         }
 
@@ -56,7 +56,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     }
 
     @NotNull
-    private AliyunSLSLogPutter buildProducer() throws ConfigTree.NotConfiguredException {
+    private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
                 getVertx(),
                 aliyunSlsConfig.getAccessKeyId(),
@@ -66,7 +66,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     }
 
     @Override
-    protected Future<Void> handleForTopic(String topic, List<MetricRecord> buffer) {
+    protected @NotNull Future<Void> handleForTopic(@NotNull String topic, @NotNull List<@NotNull MetricRecord> buffer) {
         if (buffer.isEmpty()) {
             return Future.succeededFuture();
         }

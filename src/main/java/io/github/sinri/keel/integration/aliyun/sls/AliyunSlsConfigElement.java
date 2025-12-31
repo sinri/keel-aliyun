@@ -2,7 +2,7 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
-import io.github.sinri.keel.base.configuration.ConfigTree;
+import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
-public class AliyunSlsConfigElement extends ConfigTree {
+public class AliyunSlsConfigElement extends ConfigElement {
 
     // Configuration keys
     private static final String CONFIG_KEY_DISABLED = "disabled";
