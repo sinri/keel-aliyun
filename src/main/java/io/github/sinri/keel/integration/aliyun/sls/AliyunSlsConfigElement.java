@@ -3,8 +3,8 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.base.configuration.NotConfiguredException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -13,6 +13,7 @@ import java.util.List;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class AliyunSlsConfigElement extends ConfigElement {
 
     // Configuration keys
@@ -24,7 +25,7 @@ public class AliyunSlsConfigElement extends ConfigElement {
     private static final String CONFIG_KEY_ACCESS_KEY_ID = "accessKeyId";
     private static final String CONFIG_KEY_ACCESS_KEY_SECRET = "accessKeySecret";
 
-    public AliyunSlsConfigElement(@NotNull ConfigElement another) {
+    public AliyunSlsConfigElement(ConfigElement another) {
         super(another);
     }
 
@@ -36,18 +37,15 @@ public class AliyunSlsConfigElement extends ConfigElement {
         }
     }
 
-    @NotNull
     public final String getProject() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_PROJECT));
     }
 
-    @NotNull
     public final String getLogstore() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_LOGSTORE));
     }
 
-    @Nullable
-    public final String getSource() {
+    public final @Nullable String getSource() {
         try {
             return readString(List.of(CONFIG_KEY_SOURCE));
         } catch (NotConfiguredException e) {
@@ -55,17 +53,14 @@ public class AliyunSlsConfigElement extends ConfigElement {
         }
     }
 
-    @NotNull
     public final String getEndpoint() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_ENDPOINT));
     }
 
-    @NotNull
     public final String getAccessKeyId() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_ACCESS_KEY_ID));
     }
 
-    @NotNull
     public final String getAccessKeySecret() throws NotConfiguredException {
         return readString(List.of(CONFIG_KEY_ACCESS_KEY_SECRET));
     }

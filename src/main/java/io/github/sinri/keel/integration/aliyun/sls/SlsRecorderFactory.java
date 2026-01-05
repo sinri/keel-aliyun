@@ -16,7 +16,7 @@ import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Map;
@@ -30,11 +30,11 @@ import java.util.function.Supplier;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class SlsRecorderFactory implements LoggerFactory {
-    @NotNull
     private final QueuedLogWriterAdapter adapter;
 
-    public SlsRecorderFactory(@NotNull Keel keel) {
+    public SlsRecorderFactory(Keel keel) {
         QueuedLogWriterAdapter tempWriter;
         try {
             tempWriter = new SlsQueuedLogWriterAdapter(keel);
@@ -55,36 +55,34 @@ public class SlsRecorderFactory implements LoggerFactory {
         this.adapter = tempWriter;
     }
 
-    @NotNull
-    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter(@NotNull Keel keel) {
+    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter(Keel keel) {
         return new FallbackQueuedLogWriter(keel);
     }
 
     @Override
-    public @NotNull Logger createLogger(@NotNull String topic) {
+    public Logger createLogger(String topic) {
         return new SlsLogger(topic, adapter);
     }
 
     @Override
-    public @NotNull LogWriterAdapter sharedAdapter() {
+    public LogWriterAdapter sharedAdapter() {
         return adapter;
     }
 
     @Override
-    public <L extends SpecificLog<L>> @NotNull SpecificLogger<L> createLogger(@NotNull String topic, @NotNull Supplier<L> issueRecordSupplier) {
+    public <L extends SpecificLog<L>> SpecificLogger<L> createLogger(String topic, Supplier<L> issueRecordSupplier) {
         return new SlsIssueRecorder<>(topic, issueRecordSupplier, adapter);
     }
 
+    @NullMarked
     private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
-        @NotNull
         private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
 
-        public FallbackQueuedLogWriter(@NotNull Keel keel) {
+        public FallbackQueuedLogWriter(Keel keel) {
             super(keel);
         }
 
-        @NotNull
-        private static Log formatLog(@NotNull SpecificLog<?> specificLog) {
+        private static Log formatLog(SpecificLog<?> specificLog) {
             if (specificLog instanceof Log log) {
                 return log;
             } else {
@@ -93,7 +91,7 @@ public class SlsRecorderFactory implements LoggerFactory {
         }
 
         @Override
-        protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<SpecificLog<?>> batch) {
+        protected Future<Void> processLogRecords(String topic, List<SpecificLog<?>> batch) {
             batch.forEach(item -> {
                 Logger logger = logRecordMap.computeIfAbsent(topic, s -> new BaseLogger(s, FallbackQueuedLogWriter.this));
                 logger.log(formatLog(item));

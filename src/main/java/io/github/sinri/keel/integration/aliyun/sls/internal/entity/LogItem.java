@@ -2,8 +2,8 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +16,11 @@ import java.util.List;
  *         >LogItem 实体格式定义</a>
  * @since 5.0.0
  */
+@NullMarked
 public class LogItem {
     private final int time;
-    @NotNull
     private final List<LogContent> contents;
-    @Nullable
-    private Integer nanoPartOfTime = null;
+    private @Nullable Integer nanoPartOfTime = null;
 
     public LogItem(int time) {
         this.time = time;
@@ -38,18 +37,16 @@ public class LogItem {
         return time;
     }
 
-    public @NotNull List<LogContent> getContents() {
+    public List<LogContent> getContents() {
         return contents;
     }
 
-    @NotNull
-    public LogItem addContent(@NotNull LogContent content) {
+    public LogItem addContent(LogContent content) {
         contents.add(content);
         return this;
     }
 
-    @NotNull
-    public LogItem addContent(@NotNull String key, @NotNull String value) {
+    public LogItem addContent(String key, String value) {
         contents.add(new LogContent(key, value));
         return this;
     }
@@ -59,13 +56,11 @@ public class LogItem {
         return nanoPartOfTime;
     }
 
-    @NotNull
     public LogItem setNanoPartOfTime(@Nullable Integer nanoPartOfTime) {
         this.nanoPartOfTime = nanoPartOfTime;
         return this;
     }
 
-    @NotNull
     public DynamicMessage toProtobuf() {
         var logDescriptor = LogEntityDescriptors.getInstance().getLogDescriptor();
         DynamicMessage.Builder builder = DynamicMessage.newBuilder(logDescriptor)

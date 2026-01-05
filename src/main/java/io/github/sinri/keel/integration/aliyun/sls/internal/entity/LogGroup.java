@@ -2,8 +2,8 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,15 +13,13 @@ import java.util.List;
  *         href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-loggroup?spm=a2c4g.11186623.0.0.1dde4941qHi34T">LogGroup实体格式定义</a>
  * @since 5.0.0
  */
+@NullMarked
 public class LogGroup {
     final static long maxSizeBytes = 5L * 1024 * 1024; // 5MB limit
-    @Nullable
-    private final String topic;
-    @Nullable
-    private final String source;
-    @NotNull
+
+    private final @Nullable String topic;
+    private final @Nullable String source;
     private final List<LogTag> logTags;
-    @NotNull
     private final List<LogItem> logItems;
     private int probableSize = 0;
 
@@ -61,7 +59,7 @@ public class LogGroup {
      *
      * @return The list of log tags
      */
-    public @NotNull List<LogTag> getLogTags() {
+    public List<LogTag> getLogTags() {
         return logTags;
     }
 
@@ -71,14 +69,12 @@ public class LogGroup {
      * @param logTags The list of log tags to set
      * @return this instance for chaining
      */
-    @NotNull
-    public LogGroup addLogTags(@NotNull List<LogTag> logTags) {
+    public LogGroup addLogTags(List<LogTag> logTags) {
         this.logTags.addAll(logTags);
         return this;
     }
 
-    @NotNull
-    public LogGroup addLogTag(@NotNull LogTag logTag) {
+    public LogGroup addLogTag(LogTag logTag) {
         this.logTags.add(logTag);
         return this;
     }
@@ -88,7 +84,6 @@ public class LogGroup {
      *
      * @return The list of log items
      */
-    @NotNull
     public List<LogItem> getLogItems() {
         return logItems;
     }
@@ -99,8 +94,7 @@ public class LogGroup {
      * @param logItems The list of log items to set
      * @return this instance for chaining
      */
-    @NotNull
-    public LogGroup addLogItems(@NotNull List<LogItem> logItems) {
+    public LogGroup addLogItems(List<LogItem> logItems) {
         for (var logItem : logItems) {
             addLogItem(logItem);
         }
@@ -108,14 +102,12 @@ public class LogGroup {
         return this;
     }
 
-    @NotNull
-    public LogGroup addLogItem(@NotNull LogItem logItem) {
+    public LogGroup addLogItem(LogItem logItem) {
         this.logItems.add(logItem);
         probableSize += logItem.getProbableSize();
         return this;
     }
 
-    @NotNull
     public DynamicMessage toProtobuf() {
         var logGroupDescriptor = LogEntityDescriptors.getInstance().getLogGroupDescriptor();
         var builder = DynamicMessage.newBuilder(logGroupDescriptor);

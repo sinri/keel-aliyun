@@ -14,7 +14,8 @@ import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -25,22 +26,20 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
-    @NotNull
     private final String source;
-    @NotNull
     private final AliyunSlsConfigElement aliyunSlsConfig;
     private final int bufferSize;
-    @NotNull
     private final AliyunSLSLogPutter logPutter;
-    private final @NotNull String project;
-    private final @NotNull String logstore;
+    private final String project;
+    private final String logstore;
 
-    public SlsQueuedLogWriterAdapter(@NotNull Keel keel) throws AliyunSLSDisabled {
+    public SlsQueuedLogWriterAdapter(Keel keel) throws AliyunSLSDisabled {
         this(keel, 128);
     }
 
-    public SlsQueuedLogWriterAdapter(@NotNull Keel keel, int bufferSize) throws AliyunSLSDisabled {
+    public SlsQueuedLogWriterAdapter(Keel keel, int bufferSize) throws AliyunSLSDisabled {
         super(keel);
         this.bufferSize = bufferSize;
 
@@ -67,7 +66,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     }
 
     @Override
-    protected @NotNull Future<Void> processLogRecords(@NotNull String topic, @NotNull List<@NotNull SpecificLog<?>> batch) {
+    protected Future<Void> processLogRecords(String topic, List<SpecificLog<?>> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
         return getKeel().asyncCallIteratively(batch, specificLog -> {
@@ -89,11 +88,11 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                                 logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
                                                                                           .toJsonExpression());
                             }
-                            Map<String, Object> context = specificLog.context().toMap();
+                            Map<String, @Nullable Object> context = specificLog.context().toMap();
                             if (!context.isEmpty()) {
                                 logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
                             }
-                            Map<String, Object> extra = specificLog.extra();
+                            Map<String, @Nullable Object> extra = specificLog.extra();
                             if (!context.isEmpty()) {
                                 extra.forEach((k, v) -> {
                                     if (v != null) {
@@ -124,10 +123,9 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                         });
     }
 
-    @NotNull
     private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
-                getVertx(),
+                getKeel().getVertx(),
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
                 aliyunSlsConfig.getEndpoint()

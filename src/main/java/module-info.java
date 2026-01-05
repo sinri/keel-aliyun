@@ -4,9 +4,9 @@ module io.github.sinri.keel.integration.aliyun {
     requires transitive io.github.sinri.keel.logger.api;
     requires transitive io.vertx.core;
     requires transitive io.vertx.web.client;
-    requires transitive org.jetbrains.annotations;
     requires org.lz4.java;
     requires transitive io.github.sinri.keel.core;
+    requires static org.jspecify;
 
     // Public API packages
     exports io.github.sinri.keel.integration.aliyun.sls;

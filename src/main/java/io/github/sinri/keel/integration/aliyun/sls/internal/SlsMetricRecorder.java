@@ -10,7 +10,7 @@ import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogItem;
 import io.github.sinri.keel.logger.api.metric.MetricRecord;
 import io.vertx.core.Future;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.List;
 import java.util.Map;
@@ -21,17 +21,15 @@ import java.util.TreeMap;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class SlsMetricRecorder extends AbstractMetricRecorder {
-    @NotNull
     private final String source;
-    @NotNull
     private final AliyunSlsConfigElement aliyunSlsConfig;
-    @NotNull
     private final AliyunSLSLogPutter logPutter;
-    private final @NotNull String project;
-    private final @NotNull String logstore;
+    private final String project;
+    private final String logstore;
 
-    public SlsMetricRecorder(@NotNull Keel keel) throws AliyunSLSDisabled {
+    public SlsMetricRecorder(Keel keel) throws AliyunSLSDisabled {
         super(keel);
         ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls_metric");
         if (extract == null) {
@@ -55,7 +53,6 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
         // after initialized, do not forget to deploy it.
     }
 
-    @NotNull
     private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
                 getVertx(),
@@ -66,7 +63,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     }
 
     @Override
-    protected @NotNull Future<Void> handleForTopic(@NotNull String topic, @NotNull List<@NotNull MetricRecord> buffer) {
+    protected Future<Void> handleForTopic(String topic, List<MetricRecord> buffer) {
         if (buffer.isEmpty()) {
             return Future.succeededFuture();
         }
@@ -88,8 +85,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
      *
      * @return LogItem
      */
-    @NotNull
-    private LogItem buildLogItem(@NotNull MetricRecord metricRecord) {
+    private LogItem buildLogItem(MetricRecord metricRecord) {
         String labelsKey = "__labels__";
         String timeKey = "__time_nano__";
         String valueKey = "__value__";

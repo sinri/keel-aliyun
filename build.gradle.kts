@@ -20,6 +20,7 @@ val developerOrganization: String by project
 val developerOrganizationUrl: String by project
 
 // Dependency versions
+val jspecifyVersion: String by project
 val vertxVersion: String by project
 val lz4Version: String by project
 val protobufVersion: String by project
@@ -47,23 +48,19 @@ dependencies {
     // api("io.github.sinri:keel-base")
     api("io.github.sinri:keel-core:$keelCoreVersion")
 
-    // Vert.x dependencies (from module-info.java and pom.xml)
-    // api("io.vertx:vertx-core:$vertxVersion")
-    // api("io.vertx:vertx-web-client:$vertxVersion")
-
     // LZ4 compression (from pom.xml and module-info.java)
     implementation("at.yawk.lz4:lz4-java:$lz4Version")
 
     // Protocol Buffers (from pom.xml and module-info.java)
     implementation("com.google.protobuf:protobuf-java:$protobufVersion")
 
-    // Annotations (from module-info.java)
-    api("org.jetbrains:annotations")
+    // API dependency (transitive)
+    // https://mvnrepository.com/artifact/org.jspecify/jspecify
+    compileOnly("org.jspecify:jspecify:$jspecifyVersion")
+    testCompileOnly("org.jspecify:jspecify:$jspecifyVersion")
 
     // Test dependencies
     testImplementation("io.github.sinri:keel-test:$keelTestVersion")
-    testImplementation("io.vertx:vertx-junit5:$vertxVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -147,26 +144,16 @@ publishing {
     }
 
     repositories {
-        // Internal Nexus repositories
         maven {
-            name = "Internal"
-            url = if (version.toString().endsWith("SNAPSHOT")) {
-                uri(findProperty("internalNexusSnapshotsUrl") as String)
-            } else {
-                uri(findProperty("internalNexusReleasesUrl") as String)
-            }
-            credentials {
-                username = findProperty("internalNexusUsername") as String
-                password = findProperty("internalNexusPassword") as String
-            }
-        }
-
-        // Maven Central (OSSRH)
-        maven {
-            name = "Release"
-
+            // name = "mixed"
             if (version.toString().endsWith("SNAPSHOT")) {
                 url = uri(findProperty("internalNexusSnapshotsUrl") as String)
+                credentials {
+                    username = findProperty("internalNexusUsername") as String
+                    password = findProperty("internalNexusPassword") as String
+                }
+            } else if (version.toString().contains(Regex("-[A-Za-z]+"))) {
+                url = uri(findProperty("internalNexusReleasesUrl") as String)
                 credentials {
                     username = findProperty("internalNexusUsername") as String
                     password = findProperty("internalNexusPassword") as String
@@ -178,7 +165,6 @@ publishing {
                     password = findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
                 }
             }
-
         }
     }
 }
@@ -191,17 +177,3 @@ signing {
     })
     sign(publishing.publications["mavenJava"])
 }
-
-// Custom tasks for publishing to specific repositories
-tasks.register("publishToInternal") {
-    group = "publishing"
-    description = "Publish to internal Nexus repository"
-    dependsOn("publishMavenJavaPublicationToInternalRepository")
-}
-
-tasks.register("publishToRelease") {
-    group = "publishing"
-    description = "Publish to Maven Central (OSSRH)"
-    dependsOn("publishMavenJavaPublicationToReleaseRepository")
-}
-

@@ -2,33 +2,32 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * @see <a href=
  *         "https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-logcontent">LogContent</a>
  * @since 5.0.0
  */
+@NullMarked
 public class LogContent {
-    @NotNull
     private final String key;
-    @NotNull
     private final String value;
 
-    public LogContent(@NotNull String key, @NotNull String value) {
+    public LogContent(String key, String value) {
         this.key = key;
         this.value = value;
     }
 
-    public @NotNull String getKey() {
+    public String getKey() {
         return key;
     }
 
-    public @NotNull String getValue() {
+    public String getValue() {
         return value;
     }
 
-    @NotNull
+
     public DynamicMessage toProtobuf() {
         var contentDescriptor = LogEntityDescriptors.getInstance().getContentDescriptor();
         return DynamicMessage.newBuilder(contentDescriptor)

@@ -3,27 +3,26 @@ package io.github.sinri.keel.integration.aliyun.sae;
 import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.metric.MetricRecorder;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * 阿里云 SAE 任务模板用的任务执行类。
  *
  * @since 5.0.0
  */
+@NullMarked
 public interface SAETaskUnit {
     /**
      * 默认直接输出到标准输出，如有特殊需要可重载。
      *
      * @return 日志记录器工厂实例
      */
-    @NotNull
     default LoggerFactory getLoggerFactory() {
         return StdoutLoggerFactory.getInstance();
     }
 
-    @Nullable
-    default MetricRecorder getMetricRecorder() {
+    default @Nullable MetricRecorder getMetricRecorder() {
         return null;
     }
 
@@ -39,8 +38,7 @@ public interface SAETaskUnit {
      *
      * @param throwable 导致运行非正常结束的异常
      */
-    void handleError(@NotNull Throwable throwable);
+    void handleError(Throwable throwable);
 
-    @NotNull
     SAETaskUnitEnvReader getEnvReader();
 }

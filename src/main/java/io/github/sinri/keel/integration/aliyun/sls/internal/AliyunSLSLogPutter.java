@@ -11,8 +11,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -29,19 +29,15 @@ import java.util.*;
  *
  * @since 5.0.0
  */
+@NullMarked
 public class AliyunSLSLogPutter implements Closeable {
-    @NotNull
     private final String accessKeyId;
-    @NotNull
     private final String accessKeySecret;
-    @NotNull
     private final WebClient webClient;
-    @NotNull
     private final String endpoint;
-    @NotNull
     private final Logger logger;
 
-    public AliyunSLSLogPutter(@NotNull Vertx vertx, @NotNull String accessKeyId, @NotNull String accessKeySecret, @NotNull String endpoint) {
+    public AliyunSLSLogPutter(Vertx vertx, String accessKeyId, String accessKeySecret, String endpoint) {
         this.accessKeyId = accessKeyId;
         this.accessKeySecret = accessKeySecret;
         this.webClient = WebClient.create(vertx);
@@ -57,7 +53,7 @@ public class AliyunSLSLogPutter implements Closeable {
      * - A TEMPLATED STRING
      * --- Rule 1: Replace [IP] to local address;
      */
-    @NotNull
+
     public static String buildSource(@Nullable String configuredSourceExpression) {
         if (configuredSourceExpression == null || configuredSourceExpression.isBlank()) {
             return "";
@@ -79,8 +75,8 @@ public class AliyunSLSLogPutter implements Closeable {
         this.webClient.close();
     }
 
-    @NotNull
-    public Future<Void> putLogs(@NotNull String project, @NotNull String logstore, @NotNull LogGroup logGroup) {
+
+    public Future<Void> putLogs(String project, String logstore, LogGroup logGroup) {
         return putLogsImpl(project, logstore, logGroup);
     }
 
@@ -92,8 +88,8 @@ public class AliyunSLSLogPutter implements Closeable {
      * @param logGroup LogGroup to be sent
      * @return Future of void if successful, or failed future with an error message
      */
-    @NotNull
-    private Future<Void> putLogsImpl(@NotNull String project, @NotNull String logstore, @NotNull LogGroup logGroup) {
+
+    private Future<Void> putLogsImpl(String project, String logstore, LogGroup logGroup) {
         String uri = String.format("/logstores/%s/shards/lb", logstore);
         String url = String.format("https://%s.%s%s", project, endpoint, uri);
 
@@ -155,8 +151,8 @@ public class AliyunSLSLogPutter implements Closeable {
      * According to Aliyun SLS API documentation, we should send LogGroupList;
      * But let's try sending just the first LogGroup to see if that works.
      */
-    @NotNull
-    private Buffer serializeLogGroup(@NotNull LogGroup logGroup) {
+
+    private Buffer serializeLogGroup(LogGroup logGroup) {
         return Buffer.buffer(logGroup.toProtobuf().toByteArray());
     }
 
@@ -165,7 +161,7 @@ public class AliyunSLSLogPutter implements Closeable {
      *
      * @return Date string in RFC1123 format
      */
-    @NotNull
+
     private String getGMTDate() {
         var RFC1123_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
         SimpleDateFormat sdf = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
@@ -185,14 +181,14 @@ public class AliyunSLSLogPutter implements Closeable {
      * @param queries     查询参数字符串，可以为 null
      * @return 计算得到的签名字符串
      */
-    @NotNull
+
     private String calculateSignature(
-            @NotNull String method,
+            String method,
             @Nullable Buffer body,
             @Nullable String contentType,
-            @NotNull String date,
-            @NotNull Map<String, String> headers,
-            @NotNull String uri,
+            String date,
+            Map<String, String> headers,
+            String uri,
             @Nullable String queries
     ) {
         StringBuilder sb = new StringBuilder();

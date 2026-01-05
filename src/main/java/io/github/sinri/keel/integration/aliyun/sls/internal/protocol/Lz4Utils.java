@@ -3,8 +3,8 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.protocol;
 import io.vertx.core.buffer.Buffer;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 
 /**
@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @since 5.0.0
  */
+@NullMarked
 public final class Lz4Utils {
     static final LZ4Compressor compressor = LZ4Factory.fastestInstance().fastCompressor();
 
@@ -30,7 +31,6 @@ public final class Lz4Utils {
      * @param buffer 待压缩的Buffer
      * @return 压缩后的Buffer
      */
-    @NotNull
     public static Buffer compress(@Nullable Buffer buffer) {
         if (buffer == null || buffer.length() == 0) {
             return Buffer.buffer();
@@ -46,8 +46,8 @@ public final class Lz4Utils {
      * @since 2.1.0
      * @deprecated as of 3.0.0.1, renamed from original {@link #compress(byte[])} and will be removed in a future release
      */
-    @Deprecated
-    static byte @NotNull [] compressLegacy(byte @Nullable [] srcBytes) {
+    @Deprecated(forRemoval = true)
+    static byte[] compressLegacy(byte @Nullable [] srcBytes) {
         if (srcBytes == null || srcBytes.length == 0) {
             return new byte[0];
         }
@@ -69,7 +69,7 @@ public final class Lz4Utils {
      * @return 压缩后的字节数组
      * @since 3.0.0.1
      */
-    public static byte @NotNull [] compress(byte @Nullable [] srcBytes) {
+    public static byte[] compress(byte @Nullable [] srcBytes) {
         if (srcBytes == null || srcBytes.length == 0) {
             return new byte[0];
         }
@@ -94,11 +94,12 @@ public final class Lz4Utils {
      *
      * @since 3.0.0.1
      */
+    @NullMarked
     private static class BufferPool {
         private static final int BASE_BUFFER_SIZE = 10 * 1024 * 1024;
-        private final byte @NotNull [] fixedBuffer;
-        private final byte @NotNull [] emptyBuffer;
-        private byte @NotNull [] tempBuffer;
+        private final byte[] fixedBuffer;
+        private final byte[] emptyBuffer;
+        private byte[] tempBuffer;
         private long tempBirth;
 
         BufferPool() {

@@ -2,16 +2,17 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.entity;
 
 import com.google.protobuf.DynamicMessage;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.LogEntityDescriptors;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * @see <a
  *         href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-struct-logtag">LogTag</a>
  * @since 5.0.0
  */
+@NullMarked
 public class LogTag {
-    private @NotNull String key;
-    private @NotNull String value;
+    private String key;
+    private String value;
 
     /**
      * Create a LogTag with key and value
@@ -19,7 +20,7 @@ public class LogTag {
      * @param key   The tag key
      * @param value The tag value
      */
-    public LogTag(@NotNull String key, @NotNull String value) {
+    public LogTag(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -29,7 +30,6 @@ public class LogTag {
      *
      * @return The tag key
      */
-    @NotNull
     public String getKey() {
         return key;
     }
@@ -40,7 +40,7 @@ public class LogTag {
      * @param key The tag key to set
      * @return this instance for chaining
      */
-    public LogTag setKey(@NotNull String key) {
+    public LogTag setKey(String key) {
         this.key = key;
         return this;
     }
@@ -50,7 +50,6 @@ public class LogTag {
      *
      * @return The tag value
      */
-    @NotNull
     public String getValue() {
         return value;
     }
@@ -61,13 +60,11 @@ public class LogTag {
      * @param value The tag value to set
      * @return this instance for chaining
      */
-    @NotNull
-    public LogTag setValue(@NotNull String value) {
+    public LogTag setValue(String value) {
         this.value = value;
         return this;
     }
 
-    @NotNull
     public DynamicMessage toProtobuf() {
         var logTagDescriptor = LogEntityDescriptors.getInstance().getLogTagDescriptor();
         return DynamicMessage.newBuilder(logTagDescriptor)
