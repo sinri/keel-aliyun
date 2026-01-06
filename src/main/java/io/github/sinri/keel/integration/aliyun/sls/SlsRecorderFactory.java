@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
-import io.github.sinri.keel.base.Keel;
 import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
+import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsIssueRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsLogger;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsQueuedLogWriterAdapter;
@@ -17,6 +17,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -31,32 +32,41 @@ import java.util.function.Supplier;
  * @since 5.0.0
  */
 @NullMarked
-public class SlsRecorderFactory implements LoggerFactory {
+public class SlsRecorderFactory extends KeelVerticleBase implements LoggerFactory {
     private final QueuedLogWriterAdapter adapter;
 
-    public SlsRecorderFactory(Keel keel) {
+    public SlsRecorderFactory(@Nullable AliyunSlsConfigElement aliyunSlsConfig) {
         QueuedLogWriterAdapter tempWriter;
         try {
-            tempWriter = new SlsQueuedLogWriterAdapter(keel);
+            tempWriter = new SlsQueuedLogWriterAdapter(aliyunSlsConfig);
         } catch (AliyunSLSDisabled e) {
-            tempWriter = buildFallbackQueuedLogWriter(keel);
+            tempWriter = buildFallbackQueuedLogWriter();
             tempWriter.accept(getClass().getName(), new Log()
                     .level(LogLevel.WARNING)
                     .message("Aliyun SLS Disabled, fallback to " + tempWriter.getClass().getName()));
         }
-        tempWriter.deployMe(new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
-                  .onComplete(ar -> {
-                      if (ar.failed()) {
-                          System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
-                      } else {
-                          System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
-                      }
-                  });
         this.adapter = tempWriter;
     }
 
-    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter(Keel keel) {
-        return new FallbackQueuedLogWriter(keel);
+    @Override
+    protected Future<?> startVerticle() {
+        return adapter.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                      .andThen(ar -> {
+                          if (ar.failed()) {
+                              System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
+                          } else {
+                              System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
+                          }
+                      });
+    }
+
+    @Override
+    protected Future<?> stopVerticle() {
+        return adapter.undeployMe();
+    }
+
+    protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter() {
+        return new FallbackQueuedLogWriter();
     }
 
     @Override
@@ -78,8 +88,8 @@ public class SlsRecorderFactory implements LoggerFactory {
     private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
         private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
 
-        public FallbackQueuedLogWriter(Keel keel) {
-            super(keel);
+        public FallbackQueuedLogWriter() {
+            super();
         }
 
         private static Log formatLog(SpecificLog<?> specificLog) {

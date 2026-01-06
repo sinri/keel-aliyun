@@ -1,7 +1,5 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
-import io.github.sinri.keel.base.Keel;
-import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.json.JsonifiedThrowable;
 import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
@@ -9,6 +7,7 @@ import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogItem;
+import io.github.sinri.keel.logger.api.LateObject;
 import io.github.sinri.keel.logger.api.log.Log;
 import io.github.sinri.keel.logger.api.log.SpecificLog;
 import io.vertx.core.Future;
@@ -31,38 +30,60 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
     private final int bufferSize;
-    private final AliyunSLSLogPutter logPutter;
+    private final LateObject<AliyunSLSLogPutter> lateLogPutter = new LateObject<>();
     private final String project;
     private final String logstore;
 
-    public SlsQueuedLogWriterAdapter(Keel keel) throws AliyunSLSDisabled {
-        this(keel, 128);
+    public SlsQueuedLogWriterAdapter(@Nullable AliyunSlsConfigElement aliyunSlsConfig) throws AliyunSLSDisabled {
+        this(aliyunSlsConfig, 128);
     }
 
-    public SlsQueuedLogWriterAdapter(Keel keel, int bufferSize) throws AliyunSLSDisabled {
-        super(keel);
+    public SlsQueuedLogWriterAdapter(@Nullable AliyunSlsConfigElement aliyunSlsConfig, int bufferSize) throws AliyunSLSDisabled {
+        super();
         this.bufferSize = bufferSize;
 
-        ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls");
-        if (extract == null) {
-            throw new AliyunSLSDisabled();
-        }
+        //        ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls");
+        //        if (extract == null) {
+        //            throw new AliyunSLSDisabled();
+        //        }
+        //
+        //        aliyunSlsConfig = new AliyunSlsConfigElement(extract);
 
-        aliyunSlsConfig = new AliyunSlsConfigElement(extract);
-        if (aliyunSlsConfig.isDisabled()) {
+        if (aliyunSlsConfig == null || aliyunSlsConfig.isDisabled()) {
             throw new AliyunSLSDisabled();
         }
+        this.aliyunSlsConfig = aliyunSlsConfig;
 
         this.source = AliyunSLSLogPutter.buildSource(aliyunSlsConfig.getSource());
         try {
             this.project = aliyunSlsConfig.getProject();
             this.logstore = aliyunSlsConfig.getLogstore();
-            this.logPutter = this.buildProducer();
+            //this.logPutter = this.buildProducer();
         } catch (NotConfiguredException e) {
             throw new RuntimeException(e);
         }
 
         // after initialized, do not forget to deploy it.
+    }
+
+    @Override
+    protected Future<Void> startVerticle() {
+        AliyunSLSLogPutter aliyunSLSLogPutter;
+        try {
+            aliyunSLSLogPutter = buildProducer();
+        } catch (NotConfiguredException e) {
+            return Future.failedFuture(e);
+        }
+        lateLogPutter.set(aliyunSLSLogPutter);
+        return super.startVerticle();
+    }
+
+    @Override
+    protected Future<?> stopVerticle() {
+        return super.stopVerticle()
+                    .andThen(v -> {
+                        lateLogPutter.get().close();
+                    });
     }
 
     @Override
@@ -104,11 +125,12 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                             LogGroup currentLogGroup = currentLogGroupRef.get();
                             currentLogGroup.addLogItem(logItem);
                             if (currentLogGroup.getProbableSize() > 5 * 1024 * 1024) {
-                                return this.logPutter.putLogs(project, logstore, currentLogGroup)
-                                                     .compose(v -> {
-                                                         currentLogGroupRef.set(new LogGroup(topic, source));
-                                                         return Future.succeededFuture();
-                                                     });
+                                return this.lateLogPutter.get()
+                                                         .putLogs(project, logstore, currentLogGroup)
+                                                         .compose(v -> {
+                                                             currentLogGroupRef.set(new LogGroup(topic, source));
+                                                             return Future.succeededFuture();
+                                                         });
                             } else {
                                 return Future.succeededFuture();
                             }
@@ -116,7 +138,8 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                         .compose(v -> {
                             LogGroup currentLogGroup = currentLogGroupRef.get();
                             if (currentLogGroup.getProbableSize() > 0) {
-                                return this.logPutter.putLogs(project, logstore, currentLogGroup);
+                                return this.lateLogPutter.get()
+                                                         .putLogs(project, logstore, currentLogGroup);
                             } else {
                                 return Future.succeededFuture();
                             }

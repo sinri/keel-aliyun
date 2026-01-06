@@ -1,16 +1,16 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
-import io.github.sinri.keel.base.Keel;
-import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.logger.metric.AbstractMetricRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSLSDisabled;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogItem;
+import io.github.sinri.keel.logger.api.LateObject;
 import io.github.sinri.keel.logger.api.metric.MetricRecord;
 import io.vertx.core.Future;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -25,27 +25,27 @@ import java.util.TreeMap;
 public class SlsMetricRecorder extends AbstractMetricRecorder {
     private final String source;
     private final AliyunSlsConfigElement aliyunSlsConfig;
-    private final AliyunSLSLogPutter logPutter;
+    private final LateObject<AliyunSLSLogPutter> lateLogPutter = new LateObject<>();
     private final String project;
     private final String logstore;
 
-    public SlsMetricRecorder(Keel keel) throws AliyunSLSDisabled {
-        super(keel);
-        ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls_metric");
-        if (extract == null) {
+    public SlsMetricRecorder(@Nullable AliyunSlsConfigElement aliyunSlsConfig) throws AliyunSLSDisabled {
+        super();
+        //        ConfigElement extract = keel.getConfiguration().extract("aliyun", "sls_metric");
+        //        if (extract == null) {
+        //            throw new AliyunSLSDisabled();
+        //        }
+        //aliyunSlsConfig = new AliyunSlsConfigElement(extract);
+        if (aliyunSlsConfig == null || aliyunSlsConfig.isDisabled()) {
             throw new AliyunSLSDisabled();
         }
-        aliyunSlsConfig = new AliyunSlsConfigElement(extract);
-        if (aliyunSlsConfig.isDisabled()) {
-            throw new AliyunSLSDisabled();
-        }
-
+        this.aliyunSlsConfig = aliyunSlsConfig;
 
         this.source = AliyunSLSLogPutter.buildSource(aliyunSlsConfig.getSource());
         try {
             this.project = aliyunSlsConfig.getProject();
             this.logstore = aliyunSlsConfig.getLogstore();
-            this.logPutter = this.buildProducer();
+            //this.logPutter = this.buildProducer();
         } catch (NotConfiguredException e) {
             throw new AliyunSLSDisabled(e.getMessage());
         }
@@ -63,6 +63,26 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     }
 
     @Override
+    protected Future<Void> startVerticle() {
+        AliyunSLSLogPutter aliyunSLSLogPutter;
+        try {
+            aliyunSLSLogPutter = buildProducer();
+        } catch (NotConfiguredException e) {
+            return Future.failedFuture(e);
+        }
+        lateLogPutter.set(aliyunSLSLogPutter);
+        return super.startVerticle();
+    }
+
+    @Override
+    protected Future<?> stopVerticle() {
+        return super.stopVerticle()
+                    .andThen(v -> {
+                        lateLogPutter.get().close();
+                    });
+    }
+
+    @Override
     protected Future<Void> handleForTopic(String topic, List<MetricRecord> buffer) {
         if (buffer.isEmpty()) {
             return Future.succeededFuture();
@@ -74,7 +94,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
             logGroup.addLogItem(logItem);
         });
 
-        return logPutter.putLogs(project, logstore, logGroup);
+        return lateLogPutter.get().putLogs(project, logstore, logGroup);
     }
 
     /**

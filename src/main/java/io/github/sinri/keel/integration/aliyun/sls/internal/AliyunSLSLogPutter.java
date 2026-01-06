@@ -6,8 +6,7 @@ import io.github.sinri.keel.core.utils.NetUtils;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.Lz4Utils;
 import io.github.sinri.keel.logger.api.logger.Logger;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
@@ -16,7 +15,6 @@ import org.jspecify.annotations.Nullable;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.Closeable;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -70,11 +68,17 @@ public class AliyunSLSLogPutter implements Closeable {
     }
 
     @Override
-    public void close() {
+    public void close(Completable<Void> completion) {
         logger.debug("Closing AliyunSLSLogPutter web client");
         this.webClient.close();
+        completion.succeed();
     }
 
+    public Future<Void> close() {
+        Promise<Void> promise = Promise.promise();
+        close(promise);
+        return promise.future();
+    }
 
     public Future<Void> putLogs(String project, String logstore, LogGroup logGroup) {
         return putLogsImpl(project, logstore, logGroup);

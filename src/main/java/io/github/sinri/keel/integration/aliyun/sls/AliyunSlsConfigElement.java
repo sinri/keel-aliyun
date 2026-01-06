@@ -15,7 +15,6 @@ import java.util.List;
  */
 @NullMarked
 public class AliyunSlsConfigElement extends ConfigElement {
-
     // Configuration keys
     private static final String CONFIG_KEY_DISABLED = "disabled";
     private static final String CONFIG_KEY_PROJECT = "project";
@@ -27,6 +26,16 @@ public class AliyunSlsConfigElement extends ConfigElement {
 
     public AliyunSlsConfigElement(ConfigElement another) {
         super(another);
+    }
+
+    public static @Nullable AliyunSlsConfigElement forSls(ConfigElement root) {
+        ConfigElement extract = root.extract("aliyun", "sls");
+        return extract == null ? null : new AliyunSlsConfigElement(extract);
+    }
+
+    public static @Nullable AliyunSlsConfigElement forSlsMetric(ConfigElement root) {
+        ConfigElement extract = root.extract("aliyun", "sls_metric");
+        return extract == null ? null : new AliyunSlsConfigElement(extract);
     }
 
     public final boolean isDisabled() {

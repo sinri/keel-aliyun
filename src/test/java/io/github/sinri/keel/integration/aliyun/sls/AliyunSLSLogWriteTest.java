@@ -2,22 +2,28 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.github.sinri.keel.tesuto.KeelInstantRunner;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.core.ThreadingModel;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class AliyunSLSLogWriteTest extends KeelInstantRunner {
     @Override
     protected Future<Void> run() throws Exception {
-        SlsRecorderFactory slsRecorderFactory = new SlsRecorderFactory(this.getKeel());
-        Logger logger = slsRecorderFactory.createLogger(getClass().getSimpleName());
+        AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(getConfiguration());
+        SlsRecorderFactory slsRecorderFactory = new SlsRecorderFactory(aliyunSlsConfigElement);
+        return slsRecorderFactory.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                                 .compose(deploymentId -> {
+                                     Logger logger = slsRecorderFactory.createLogger(getClass().getSimpleName());
 
-        return asyncCallStepwise(10, i -> {
-            logger.info("Step " + i + " testing");
-            return asyncSleep(1000);
-        })
-                .compose(v -> {
-                    return getKeel().asyncSleep(2000);
-                });
+                                     return asyncCallStepwise(10, i -> {
+                                         logger.info("Step " + i + " testing");
+                                         return asyncSleep(1000);
+                                     })
+                                             .compose(v -> {
+                                                 return asyncSleep(2000);
+                                             });
+                                 });
     }
 }
