@@ -90,65 +90,65 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     protected Future<Void> processLogRecords(String topic, List<SpecificLog<?>> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
-        return getKeel().asyncCallIteratively(batch, specificLog -> {
-                            int timeInSec = (int) (specificLog.timestamp() / 1000);
-                            LogItem logItem = new LogItem(timeInSec);
+        return asyncCallIteratively(batch, specificLog -> {
+            int timeInSec = (int) (specificLog.timestamp() / 1000);
+            LogItem logItem = new LogItem(timeInSec);
 
-                            String name = specificLog.level().name();
-                            logItem.addContent(Log.MapKeyLevel, name);
-                            String message = specificLog.message();
-                            if (message != null) {
-                                logItem.addContent(Log.MapKeyMessage, message);
-                            }
-                            List<String> classification = specificLog.classification();
-                            if (classification != null && !classification.isEmpty()) {
-                                logItem.addContent(Log.MapKeyClassification, new JsonArray(classification).encode());
-                            }
-                            Throwable exception = specificLog.exception();
-                            if (exception != null) {
-                                logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
-                                                                                          .toJsonExpression());
-                            }
-                            Map<String, @Nullable Object> context = specificLog.context().toMap();
-                            if (!context.isEmpty()) {
-                                logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
-                            }
-                            Map<String, @Nullable Object> extra = specificLog.extra();
-                            if (!context.isEmpty()) {
-                                extra.forEach((k, v) -> {
-                                    if (v != null) {
-                                        logItem.addContent(k, v.toString());
-                                    }
-                                });
-                            }
+            String name = specificLog.level().name();
+            logItem.addContent(Log.MapKeyLevel, name);
+            String message = specificLog.message();
+            if (message != null) {
+                logItem.addContent(Log.MapKeyMessage, message);
+            }
+            List<String> classification = specificLog.classification();
+            if (classification != null && !classification.isEmpty()) {
+                logItem.addContent(Log.MapKeyClassification, new JsonArray(classification).encode());
+            }
+            Throwable exception = specificLog.exception();
+            if (exception != null) {
+                logItem.addContent(Log.MapKeyException, JsonifiedThrowable.wrap(exception)
+                                                                          .toJsonExpression());
+            }
+            Map<String, @Nullable Object> context = specificLog.context().toMap();
+            if (!context.isEmpty()) {
+                logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
+            }
+            Map<String, @Nullable Object> extra = specificLog.extra();
+            if (!context.isEmpty()) {
+                extra.forEach((k, v) -> {
+                    if (v != null) {
+                        logItem.addContent(k, v.toString());
+                    }
+                });
+            }
 
-                            LogGroup currentLogGroup = currentLogGroupRef.get();
-                            currentLogGroup.addLogItem(logItem);
-                            if (currentLogGroup.getProbableSize() > 5 * 1024 * 1024) {
-                                return this.lateLogPutter.get()
-                                                         .putLogs(project, logstore, currentLogGroup)
-                                                         .compose(v -> {
-                                                             currentLogGroupRef.set(new LogGroup(topic, source));
-                                                             return Future.succeededFuture();
-                                                         });
-                            } else {
-                                return Future.succeededFuture();
-                            }
-                        })
-                        .compose(v -> {
-                            LogGroup currentLogGroup = currentLogGroupRef.get();
-                            if (currentLogGroup.getProbableSize() > 0) {
-                                return this.lateLogPutter.get()
-                                                         .putLogs(project, logstore, currentLogGroup);
-                            } else {
-                                return Future.succeededFuture();
-                            }
-                        });
+            LogGroup currentLogGroup = currentLogGroupRef.get();
+            currentLogGroup.addLogItem(logItem);
+            if (currentLogGroup.getProbableSize() > 5 * 1024 * 1024) {
+                return this.lateLogPutter.get()
+                                         .putLogs(project, logstore, currentLogGroup)
+                                         .compose(v -> {
+                                             currentLogGroupRef.set(new LogGroup(topic, source));
+                                             return Future.succeededFuture();
+                                         });
+            } else {
+                return Future.succeededFuture();
+            }
+        })
+                .compose(v -> {
+                    LogGroup currentLogGroup = currentLogGroupRef.get();
+                    if (currentLogGroup.getProbableSize() > 0) {
+                        return this.lateLogPutter.get()
+                                                 .putLogs(project, logstore, currentLogGroup);
+                    } else {
+                        return Future.succeededFuture();
+                    }
+                });
     }
 
     private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
-                getKeel().getVertx(),
+                getVertx(),
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
                 aliyunSlsConfig.getEndpoint()

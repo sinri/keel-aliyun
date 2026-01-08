@@ -1,5 +1,6 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
+import io.github.sinri.keel.base.configuration.ConfigElement;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.github.sinri.keel.tesuto.KeelInstantRunner;
 import io.vertx.core.DeploymentOptions;
@@ -11,7 +12,7 @@ import org.jspecify.annotations.NullMarked;
 public class AliyunSLSLogWriteTest extends KeelInstantRunner {
     @Override
     protected Future<Void> run() throws Exception {
-        AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(getConfiguration());
+        AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(ConfigElement.root());
         SlsRecorderFactory slsRecorderFactory = new SlsRecorderFactory(aliyunSlsConfigElement);
         return slsRecorderFactory.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
                                  .compose(deploymentId -> {

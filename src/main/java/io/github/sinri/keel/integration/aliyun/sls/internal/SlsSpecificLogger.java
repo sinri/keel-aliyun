@@ -14,10 +14,10 @@ import java.util.function.Supplier;
  * @since 5.0.0
  */
 @NullMarked
-public class SlsIssueRecorder<T extends SpecificLog<T>> extends BaseSpecificLogger<T> {
+public class SlsSpecificLogger<T extends SpecificLog<T>> extends BaseSpecificLogger<T> {
 
-    public SlsIssueRecorder(String topic, Supplier<T> issueRecordSupplier, QueuedLogWriterAdapter queuedLogWriterAdapter) {
-        super(topic, issueRecordSupplier, queuedLogWriterAdapter);
+    public SlsSpecificLogger(String topic, Supplier<T> specificLogSupplier, QueuedLogWriterAdapter queuedLogWriterAdapter) {
+        super(topic, specificLogSupplier, queuedLogWriterAdapter);
     }
 
 }

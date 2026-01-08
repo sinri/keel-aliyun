@@ -2,9 +2,9 @@ package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.base.logger.adapter.QueuedLogWriterAdapter;
 import io.github.sinri.keel.base.verticles.KeelVerticleBase;
-import io.github.sinri.keel.integration.aliyun.sls.internal.SlsIssueRecorder;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsLogger;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsQueuedLogWriterAdapter;
+import io.github.sinri.keel.integration.aliyun.sls.internal.SlsSpecificLogger;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.adapter.LogWriterAdapter;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
@@ -80,8 +80,8 @@ public class SlsRecorderFactory extends KeelVerticleBase implements LoggerFactor
     }
 
     @Override
-    public <L extends SpecificLog<L>> SpecificLogger<L> createLogger(String topic, Supplier<L> issueRecordSupplier) {
-        return new SlsIssueRecorder<>(topic, issueRecordSupplier, adapter);
+    public <L extends SpecificLog<L>> SpecificLogger<L> createLogger(String topic, Supplier<L> specificLogSupplier) {
+        return new SlsSpecificLogger<>(topic, specificLogSupplier, adapter);
     }
 
     @NullMarked
