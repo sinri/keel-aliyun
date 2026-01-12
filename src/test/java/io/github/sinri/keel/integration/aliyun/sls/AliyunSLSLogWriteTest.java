@@ -13,10 +13,10 @@ public class AliyunSLSLogWriteTest extends KeelInstantRunner {
     @Override
     protected Future<Void> run() throws Exception {
         AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(ConfigElement.root());
-        SlsRecorderFactory slsRecorderFactory = new SlsRecorderFactory(aliyunSlsConfigElement);
-        return slsRecorderFactory.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
-                                 .compose(deploymentId -> {
-                                     Logger logger = slsRecorderFactory.createLogger(getClass().getSimpleName());
+        SlsLoggerFactory slsLoggerFactory = new SlsLoggerFactory(aliyunSlsConfigElement);
+        return slsLoggerFactory.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                               .compose(deploymentId -> {
+                                   Logger logger = slsLoggerFactory.createLogger(getClass().getSimpleName());
 
                                      return asyncCallStepwise(10, i -> {
                                          logger.info("Step " + i + " testing");

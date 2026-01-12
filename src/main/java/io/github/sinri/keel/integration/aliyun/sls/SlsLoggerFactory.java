@@ -32,10 +32,10 @@ import java.util.function.Supplier;
  * @since 5.0.0
  */
 @NullMarked
-public class SlsRecorderFactory extends KeelVerticleBase implements LoggerFactory {
+public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory {
     private final QueuedLogWriterAdapter adapter;
 
-    public SlsRecorderFactory(@Nullable AliyunSlsConfigElement aliyunSlsConfig) {
+    public SlsLoggerFactory(@Nullable AliyunSlsConfigElement aliyunSlsConfig) {
         QueuedLogWriterAdapter tempWriter;
         try {
             tempWriter = new SlsQueuedLogWriterAdapter(aliyunSlsConfig);
