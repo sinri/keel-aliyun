@@ -63,7 +63,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
     }
 
     @Override
-    protected Future<Void> startVerticle() {
+    protected Future<Void> prepareForLoop() {
         AliyunSLSLogPutter aliyunSLSLogPutter;
         try {
             aliyunSLSLogPutter = buildProducer();
@@ -71,7 +71,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
             return Future.failedFuture(e);
         }
         lateLogPutter.set(aliyunSLSLogPutter);
-        return super.startVerticle();
+        return Future.succeededFuture();
     }
 
     @Override
