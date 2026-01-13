@@ -37,7 +37,13 @@ class SlsReaderTest extends KeelJUnit5Test {
                                                    .build();
         slsReader.callGetLogsV2(request)
                  .onSuccess(resp -> {
-                     getUnitTestLogger().info("resp: " + resp.encodePrettily());
+                     getUnitTestLogger().info("process " + resp.getMeta().getProgress() + " in " + resp.getMeta()
+                                                                                                       .getElapsedMillisecond() + " for " + resp.getMeta()
+                                                                                                                                                .getProcessedRows() + " rows");
+                     getUnitTestLogger().info("data:");
+                     resp.getData().forEach(j -> {
+                         getUnitTestLogger().info("log:\n" + j);
+                     });
                  })
                  .andThen(testContext.succeedingThenComplete());
     }

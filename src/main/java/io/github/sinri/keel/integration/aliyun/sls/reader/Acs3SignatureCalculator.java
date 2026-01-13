@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 @Deprecated(forRemoval = true)
 @NullMarked
-public class Acs3SignatureCalculator {
+class Acs3SignatureCalculator {
     private static final String ALGORITHM = "ACS3-HMAC-SHA256";
     private static final String HMAC_SHA256 = "HmacSHA256";
     private static final String SHA256 = "SHA-256";

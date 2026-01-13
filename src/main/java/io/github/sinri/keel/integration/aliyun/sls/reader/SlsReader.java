@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls.reader;
 
 import io.github.sinri.keel.base.VertxHolder;
+import io.github.sinri.keel.base.annotations.TechnicalPreview;
 import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
 import io.github.sinri.keel.core.utils.DigestUtils;
@@ -32,6 +33,7 @@ import java.util.*;
  * @see <a href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-getlogsv2">GetLogsV2 API</a>
  * @since 5.0.0
  */
+@TechnicalPreview(since = "5.0.0")
 @NullMarked
 public class SlsReader implements VertxHolder, Closeable {
     private static final String CONTENT_TYPE = "application/json";
@@ -75,7 +77,7 @@ public class SlsReader implements VertxHolder, Closeable {
      * @return Future containing the response as JsonObject
      * @see <a href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-getlogsv2">GetLogsV2</a>
      */
-    public Future<JsonObject> callGetLogsV2(GetLogsV2Request request) {
+    public Future<GetLogsV2Response> callGetLogsV2(GetLogsV2Request request) {
         try {
             String project = aliyunSlsConfigElement.getProject();
             String logstore = aliyunSlsConfigElement.getLogstore();
@@ -83,7 +85,10 @@ public class SlsReader implements VertxHolder, Closeable {
             String accessKeyId = aliyunSlsConfigElement.getAccessKeyId();
             String accessKeySecret = aliyunSlsConfigElement.getAccessKeySecret();
 
-            return callGetLogsV2Impl(project, logstore, endpoint, accessKeyId, accessKeySecret, request);
+            return callGetLogsV2Impl(project, logstore, endpoint, accessKeyId, accessKeySecret, request)
+                    .compose(jsonObject -> {
+                        return Future.succeededFuture(new GetLogsV2Response(jsonObject));
+                    });
         } catch (NotConfiguredException e) {
             return Future.failedFuture(e);
         }
