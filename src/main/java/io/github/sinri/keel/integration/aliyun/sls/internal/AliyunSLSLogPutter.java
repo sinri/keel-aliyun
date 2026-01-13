@@ -165,7 +165,6 @@ public class AliyunSLSLogPutter implements Closeable {
      *
      * @return Date string in RFC1123 format
      */
-
     private String getGMTDate() {
         var RFC1123_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
         SimpleDateFormat sdf = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
@@ -185,7 +184,6 @@ public class AliyunSLSLogPutter implements Closeable {
      * @param queries     查询参数字符串，可以为 null
      * @return 计算得到的签名字符串
      */
-
     private String calculateSignature(
             String method,
             @Nullable Buffer body,

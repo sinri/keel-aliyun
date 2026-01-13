@@ -114,7 +114,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
                 logItem.addContent(Log.MapKeyContext, new JsonObject(context).encode());
             }
             Map<String, @Nullable Object> extra = specificLog.extra();
-            if (!context.isEmpty()) {
+            if (!extra.isEmpty()) {
                 extra.forEach((k, v) -> {
                     if (v != null) {
                         logItem.addContent(k, v.toString());
