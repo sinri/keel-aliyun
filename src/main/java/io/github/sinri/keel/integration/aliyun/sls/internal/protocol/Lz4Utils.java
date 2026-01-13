@@ -3,6 +3,7 @@ package io.github.sinri.keel.integration.aliyun.sls.internal.protocol;
 import io.vertx.core.buffer.Buffer;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
+import net.jpountz.lz4.LZ4FastDecompressor;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -17,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class Lz4Utils {
     static final LZ4Compressor compressor = LZ4Factory.fastestInstance().fastCompressor();
+    static final LZ4FastDecompressor decompressor = LZ4Factory.fastestInstance().fastDecompressor();
 
     /**
      * ThreadLocal缓冲区池，每个线程维护自己的缓冲区
@@ -87,6 +89,39 @@ public final class Lz4Utils {
             // 归还缓冲区并进行内存管理
             pool.afterUsingBuffer();
         }
+    }
+
+    /**
+     * 使用LZ4算法解压缩一个{@link Buffer}对象内的字节数组，并返回解压后的字节数组组成的{@link Buffer}对象。
+     *
+     * @param compressedBuffer 待解压的Buffer
+     * @param originalLength   原始数据的长度（解压后的长度）
+     * @return 解压后的Buffer
+     * @since 5.0.0
+     */
+    public static Buffer decompress(@Nullable Buffer compressedBuffer, int originalLength) {
+        if (compressedBuffer == null || compressedBuffer.length() == 0) {
+            return Buffer.buffer();
+        }
+        return Buffer.buffer(decompress(compressedBuffer.getBytes(), originalLength));
+    }
+
+    /**
+     * 使用LZ4算法解压缩字节数组。
+     *
+     * @param compressedBytes 待解压的字节数组
+     * @param originalLength  原始数据的长度（解压后的长度）
+     * @return 解压后的字节数组
+     * @since 5.0.0
+     */
+    public static byte[] decompress(byte @Nullable [] compressedBytes, int originalLength) {
+        if (compressedBytes == null || compressedBytes.length == 0) {
+            return new byte[0];
+        }
+
+        byte[] decompressedBytes = new byte[originalLength];
+        decompressor.decompress(compressedBytes, 0, decompressedBytes, 0, originalLength);
+        return decompressedBytes;
     }
 
     /**
