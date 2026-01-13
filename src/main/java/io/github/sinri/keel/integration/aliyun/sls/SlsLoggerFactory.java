@@ -5,6 +5,7 @@ import io.github.sinri.keel.base.verticles.KeelVerticleBase;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsLogger;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsQueuedLogWriterAdapter;
 import io.github.sinri.keel.integration.aliyun.sls.internal.SlsSpecificLogger;
+import io.github.sinri.keel.logger.api.LateObject;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.adapter.LogWriterAdapter;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
@@ -33,36 +34,48 @@ import java.util.function.Supplier;
  */
 @NullMarked
 public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory {
-    private final QueuedLogWriterAdapter adapter;
+    private final @Nullable AliyunSlsConfigElement aliyunSlsConfig;
+    private final LateObject<QueuedLogWriterAdapter> lateAdapter = new LateObject<>();
 
     public SlsLoggerFactory(@Nullable AliyunSlsConfigElement aliyunSlsConfig) {
+        this.aliyunSlsConfig = aliyunSlsConfig;
+    }
+
+    @Override
+    protected Future<Void> startVerticle() {
         QueuedLogWriterAdapter tempWriter;
         try {
             tempWriter = new SlsQueuedLogWriterAdapter(aliyunSlsConfig);
         } catch (AliyunSLSDisabled e) {
+            System.out.println("Aliyun SLS Disabled, use fallback");
             tempWriter = buildFallbackQueuedLogWriter();
             tempWriter.accept(getClass().getName(), new Log()
                     .level(LogLevel.WARNING)
-                    .message("Aliyun SLS Disabled, fallback to " + tempWriter.getClass().getName()));
+                    .message("SlsLoggerFactory adapter impl fallback to " + tempWriter.getClass().getName()));
         }
-        this.adapter = tempWriter;
+        this.lateAdapter.set(tempWriter);
+
+        return this.lateAdapter
+                .get()
+                .deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                .andThen(ar -> {
+                    if (ar.failed()) {
+                        System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
+                    } else {
+                        System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
+                    }
+                })
+                .compose(s -> {
+                    return Future.succeededFuture();
+                });
     }
 
     @Override
-    protected Future<?> startVerticle() {
-        return adapter.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
-                      .andThen(ar -> {
-                          if (ar.failed()) {
-                              System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
-                          } else {
-                              System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
-                          }
-                      });
-    }
-
-    @Override
-    protected Future<?> stopVerticle() {
-        return adapter.undeployMe();
+    protected Future<Void> stopVerticle() {
+        if (lateAdapter.isInitialized()) {
+            return lateAdapter.get().undeployMe();
+        }
+        return Future.succeededFuture();
     }
 
     protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter() {
@@ -71,17 +84,17 @@ public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory 
 
     @Override
     public Logger createLogger(String topic) {
-        return new SlsLogger(topic, adapter);
+        return new SlsLogger(topic, lateAdapter.get());
     }
 
     @Override
     public LogWriterAdapter sharedAdapter() {
-        return adapter;
+        return lateAdapter.get();
     }
 
     @Override
     public <L extends SpecificLog<L>> SpecificLogger<L> createLogger(String topic, Supplier<L> specificLogSupplier) {
-        return new SlsSpecificLogger<>(topic, specificLogSupplier, adapter);
+        return new SlsSpecificLogger<>(topic, specificLogSupplier, lateAdapter.get());
     }
 
     @NullMarked
