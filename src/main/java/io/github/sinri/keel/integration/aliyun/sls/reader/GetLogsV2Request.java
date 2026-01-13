@@ -96,6 +96,41 @@ public class GetLogsV2Request implements JsonObjectConvertible {
      */
     private final @Nullable Boolean highlight;
 
+    /**
+     * Construct a GetLogsV2Request from a JsonObject.
+     * <p>
+     * This constructor parses the JSON object and populates all fields.
+     *
+     * @param jsonObject JSON object containing request parameters
+     * @throws IllegalArgumentException if required fields (from, to) are missing
+     */
+    public GetLogsV2Request(JsonObject jsonObject) {
+        // Required fields
+        Integer fromValue = jsonObject.getInteger("from");
+        Integer toValue = jsonObject.getInteger("to");
+
+        if (fromValue == null) {
+            throw new IllegalArgumentException("Required field 'from' is missing");
+        }
+        if (toValue == null) {
+            throw new IllegalArgumentException("Required field 'to' is missing");
+        }
+
+        this.from = fromValue;
+        this.to = toValue;
+
+        // Optional fields
+        this.line = jsonObject.getInteger("line");
+        this.offset = jsonObject.getInteger("offset");
+        this.reverse = jsonObject.getBoolean("reverse");
+        this.powerSql = jsonObject.getBoolean("powerSql");
+        this.session = jsonObject.getString("session");
+        this.topic = jsonObject.getString("topic");
+        this.query = jsonObject.getString("query");
+        this.forward = jsonObject.getBoolean("forward");
+        this.highlight = jsonObject.getBoolean("highlight");
+    }
+
     private GetLogsV2Request(Builder builder) {
         this.from = builder.from;
         this.to = builder.to;

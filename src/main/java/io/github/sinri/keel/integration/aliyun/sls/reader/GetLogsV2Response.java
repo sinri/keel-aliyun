@@ -6,6 +6,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 @NullMarked
 public class GetLogsV2Response extends UnmodifiableJsonifiableEntityImpl {
@@ -52,6 +53,10 @@ public class GetLogsV2Response extends UnmodifiableJsonifiableEntityImpl {
          */
         public String getProgress() {
             return readStringRequired("progress");
+        }
+
+        public boolean isCompleted() {
+            return Objects.equals(getProgress(), "Complete");
         }
 
         /**
