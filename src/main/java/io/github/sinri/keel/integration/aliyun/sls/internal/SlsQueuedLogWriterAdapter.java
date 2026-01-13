@@ -67,7 +67,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     }
 
     @Override
-    protected Future<Void> startVerticle() {
+    protected Future<Void> prepareForLoop() {
         AliyunSLSLogPutter aliyunSLSLogPutter;
         try {
             aliyunSLSLogPutter = buildProducer();
@@ -75,14 +75,14 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
             return Future.failedFuture(e);
         }
         lateLogPutter.set(aliyunSLSLogPutter);
-        return super.startVerticle();
+        return Future.succeededFuture();
     }
 
     @Override
     protected Future<?> stopVerticle() {
         return super.stopVerticle()
-                    .andThen(v -> {
-                        lateLogPutter.get().close();
+                    .compose(stopped -> {
+                        return lateLogPutter.get().close();
                     });
     }
 

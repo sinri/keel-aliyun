@@ -11,7 +11,6 @@ import io.github.sinri.keel.logger.api.adapter.LogWriterAdapter;
 import io.github.sinri.keel.logger.api.factory.LoggerFactory;
 import io.github.sinri.keel.logger.api.log.Log;
 import io.github.sinri.keel.logger.api.log.SpecificLog;
-import io.github.sinri.keel.logger.api.logger.BaseLogger;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.github.sinri.keel.logger.api.logger.SpecificLogger;
 import io.vertx.core.DeploymentOptions;
@@ -20,9 +19,6 @@ import io.vertx.core.ThreadingModel;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -43,6 +39,7 @@ public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory 
 
     @Override
     protected Future<Void> startVerticle() {
+        //        System.out.println("SlsLoggerFactory starting...");
         QueuedLogWriterAdapter tempWriter;
         try {
             tempWriter = new SlsQueuedLogWriterAdapter(aliyunSlsConfig);
@@ -97,29 +94,4 @@ public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory 
         return new SlsSpecificLogger<>(topic, specificLogSupplier, lateAdapter.get());
     }
 
-    @NullMarked
-    private static class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
-        private final Map<String, Logger> logRecordMap = new ConcurrentHashMap<>();
-
-        public FallbackQueuedLogWriter() {
-            super();
-        }
-
-        private static Log formatLog(SpecificLog<?> specificLog) {
-            if (specificLog instanceof Log log) {
-                return log;
-            } else {
-                return new Log(specificLog);
-            }
-        }
-
-        @Override
-        protected Future<Void> processLogRecords(String topic, List<SpecificLog<?>> batch) {
-            batch.forEach(item -> {
-                Logger logger = logRecordMap.computeIfAbsent(topic, s -> new BaseLogger(s, FallbackQueuedLogWriter.this));
-                logger.log(formatLog(item));
-            });
-            return Future.succeededFuture();
-        }
-    }
 }
