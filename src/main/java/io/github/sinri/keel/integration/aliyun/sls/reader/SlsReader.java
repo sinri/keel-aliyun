@@ -4,9 +4,10 @@ import io.github.sinri.keel.base.VertxHolder;
 import io.github.sinri.keel.base.annotations.TechnicalPreview;
 import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
-import io.github.sinri.keel.core.utils.DigestUtils;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.Lz4Utils;
+import io.github.sinri.keel.integration.aliyun.sls.internal.sign.AliyunSlsSignatureKit;
+import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -15,15 +16,11 @@ import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 本类提供阿里云日志服务（SLS）的日志获取类功能。
@@ -50,6 +47,7 @@ public class SlsReader implements VertxHolder, Closeable {
         this.webClient = WebClient.create(vertx);
         this.logger = StdoutLoggerFactory.getInstance()
                                          .createLogger(SlsReader.class.getName());
+        this.logger.visibleLevel(LogLevel.WARNING);
     }
 
     @Override
@@ -59,7 +57,7 @@ public class SlsReader implements VertxHolder, Closeable {
 
     @Override
     public void close(Completable<Void> completion) {
-        logger.debug("Closing SlsReader web client");
+        //logger.debug("Closing SlsReader web client");
         this.webClient.close();
         completion.succeed();
     }
@@ -118,7 +116,7 @@ public class SlsReader implements VertxHolder, Closeable {
         String url = String.format("https://%s.%s%s", project, endpoint, uri);
 
         // Get current GMT date
-        String date = getGMTDate();
+        String date = AliyunSlsSignatureKit.getGMTDate();
 
         // Prepare request body
         String requestBody = request.toJsonExpression();
@@ -147,7 +145,7 @@ public class SlsReader implements VertxHolder, Closeable {
         }
 
         // Calculate SLS LOG signature
-        String signature = calculateSignature(
+        String signature = AliyunSlsSignatureKit.calculateSignature(
                 "POST",
                 bodyBuffer,
                 CONTENT_TYPE,
@@ -170,94 +168,13 @@ public class SlsReader implements VertxHolder, Closeable {
                                .context("date", date));
 
         return httpRequest.sendBuffer(bodyBuffer)
-                          .compose(response -> handleResponse(response))
+                          .compose(this::handleResponse)
                           .recover(throwable -> {
-                              logger.error(log -> log.exception(throwable)
-                                                     .message("GetLogsV2 request failed"));
+                              logger.error(log -> log
+                                      .exception(throwable)
+                                      .message("GetLogsV2 request failed"));
                               return Future.failedFuture(throwable);
                           });
-    }
-
-    /**
-     * Get the current date in GMT format as required by SLS API.
-     *
-     * @return Date string in RFC1123 format
-     */
-    private String getGMTDate() {
-        var RFC1123_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
-        SimpleDateFormat sdf = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return sdf.format(new Date());
-    }
-
-    /**
-     * Calculate SLS LOG signature (HMAC-SHA1).
-     * <p>
-     * This method follows the same signature algorithm as used by AliyunSLSLogPutter.
-     *
-     * @param method          HTTP method
-     * @param body            HTTP request body (can be null)
-     * @param contentType     Content-Type header (can be null)
-     * @param date            Request date
-     * @param headers         Request headers
-     * @param uri             Request URI
-     * @param queries         Query parameters (can be null)
-     * @param accessKeySecret Access key secret for signing
-     * @return Base64-encoded signature
-     */
-    private String calculateSignature(
-            String method,
-            @Nullable Buffer body,
-            @Nullable String contentType,
-            String date,
-            Map<String, String> headers,
-            String uri,
-            @Nullable String queries,
-            String accessKeySecret
-    ) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(method).append("\n");
-        if (body != null) {
-            String md5 = DigestUtils.MD5(body.getBytes());
-            sb.append(md5).append("\n");
-        } else {
-            sb.append("\n");
-        }
-        if (contentType != null) {
-            sb.append(contentType).append("\n");
-        } else {
-            sb.append("\n");
-        }
-        sb.append(date).append("\n");
-
-        List<String> headerLines = headers.keySet().stream()
-                                          .filter(headerName -> headerName.startsWith("x-log-") || headerName.startsWith("x-acs-"))
-                                          .sorted().map(x -> x + ":" + headers.get(x))
-                                          .toList();
-        headerLines.forEach(x -> sb.append(x).append("\n"));
-
-        sb.append(uri);
-        if (queries != null && !queries.isBlank()) {
-            sb.append("?").append(queries);
-        }
-
-        var signStr = sb.toString();
-
-        try {
-            // Calculate HMAC-SHA1 signature
-            var HmacSHA1 = "HmacSHA1";
-            Mac mac = Mac.getInstance(HmacSHA1);
-            SecretKeySpec signingKey = new SecretKeySpec(
-                    accessKeySecret.getBytes(StandardCharsets.UTF_8),
-                    HmacSHA1);
-            mac.init(signingKey);
-            byte[] signatureBytes = mac.doFinal(signStr.getBytes(StandardCharsets.UTF_8));
-
-            // Encode signature in Base64
-            return Base64.getEncoder().encodeToString(signatureBytes);
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -280,7 +197,7 @@ public class SlsReader implements VertxHolder, Closeable {
         }
 
         try {
-            Buffer responseBody = response.body();
+            Buffer responseBody = response.bodyAsBuffer();
             if (responseBody == null || responseBody.length() == 0) {
                 return Future.succeededFuture(new JsonObject());
             }

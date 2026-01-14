@@ -1,10 +1,10 @@
 package io.github.sinri.keel.integration.aliyun.sls.internal;
 
 import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
-import io.github.sinri.keel.core.utils.DigestUtils;
 import io.github.sinri.keel.core.utils.NetUtils;
 import io.github.sinri.keel.integration.aliyun.sls.internal.entity.LogGroup;
 import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.Lz4Utils;
+import io.github.sinri.keel.integration.aliyun.sls.internal.sign.AliyunSlsSignatureKit;
 import io.github.sinri.keel.logger.api.logger.Logger;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -13,13 +13,10 @@ import io.vertx.ext.web.client.WebClient;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -97,7 +94,7 @@ public class AliyunSLSLogPutter implements Closeable {
         String uri = String.format("/logstores/%s/shards/lb", logstore);
         String url = String.format("https://%s.%s%s", project, endpoint, uri);
 
-        String date = getGMTDate();
+        String date = AliyunSlsSignatureKit.getGMTDate();
         String contentType = "application/x-protobuf";
 
         Map<String, String> headers = new HashMap<>();
@@ -123,14 +120,15 @@ public class AliyunSLSLogPutter implements Closeable {
         }
 
         // Calculate signature and add authorization header
-        String signature = calculateSignature(
+        String signature = AliyunSlsSignatureKit.calculateSignature(
                 "POST",
                 payload,
                 contentType,
                 date,
                 headers,
                 uri,
-                null);
+                null,
+                accessKeySecret);
         headers.put("Authorization", "LOG " + accessKeyId + ":" + signature);
 
         HttpRequest<Buffer> request = this.webClient.postAbs(url);
@@ -160,81 +158,4 @@ public class AliyunSLSLogPutter implements Closeable {
         return Buffer.buffer(logGroup.toProtobuf().toByteArray());
     }
 
-    /**
-     * Get the current date in GMT format as required by SLS API.
-     *
-     * @return Date string in RFC1123 format
-     */
-    private String getGMTDate() {
-        var RFC1123_PATTERN = "EEE, dd MMM yyyy HH:mm:ss z";
-        SimpleDateFormat sdf = new SimpleDateFormat(RFC1123_PATTERN, Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return sdf.format(new Date());
-    }
-
-    /**
-     * 如果是GET请求这样没有HTTP Request Body，则在签名计算过程里contentType和body均对应作空行处理。
-     *
-     * @param method      HTTP方法，如 GET, POST 等
-     * @param body        HTTP请求体，可以为 null
-     * @param contentType Content-Type 头部，可以为 null
-     * @param date        请求时间
-     * @param headers     请求头部集合
-     * @param uri         请求URI
-     * @param queries     查询参数字符串，可以为 null
-     * @return 计算得到的签名字符串
-     */
-    private String calculateSignature(
-            String method,
-            @Nullable Buffer body,
-            @Nullable String contentType,
-            String date,
-            Map<String, String> headers,
-            String uri,
-            @Nullable String queries
-    ) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(method).append("\n");
-        if (body != null) {
-            String md5 = DigestUtils.MD5(body.getBytes());
-            sb.append(md5).append("\n");
-        } else {
-            sb.append("\n");
-        }
-        if (contentType != null) {
-            sb.append(contentType).append("\n");
-        } else {
-            sb.append("\n");
-        }
-        sb.append(date).append("\n");
-
-        List<String> headerLines = headers.keySet().stream()
-                                          .filter(headerName -> headerName.startsWith("x-log-") || headerName.startsWith("x-acs-"))
-                                          .sorted().map(x -> x + ":" + headers.get(x))
-                                          .toList();
-        headerLines.forEach(x -> sb.append(x).append("\n"));
-
-        sb.append(uri);
-        if (queries != null && !queries.isBlank()) {
-            sb.append("?").append(queries);
-        }
-
-        var signStr = sb.toString();
-
-        try {
-            // Calculate HMAC-SHA1 signature
-            var HmacSHA1 = "HmacSHA1";
-            Mac mac = Mac.getInstance(HmacSHA1);
-            SecretKeySpec signingKey = new SecretKeySpec(
-                    accessKeySecret.getBytes(StandardCharsets.UTF_8),
-                    HmacSHA1);
-            mac.init(signingKey);
-            byte[] signatureBytes = mac.doFinal(signStr.getBytes(StandardCharsets.UTF_8));
-
-            // Encode signature in Base64
-            return Base64.getEncoder().encodeToString(signatureBytes);
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

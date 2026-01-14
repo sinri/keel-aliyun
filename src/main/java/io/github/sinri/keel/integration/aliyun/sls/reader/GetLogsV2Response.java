@@ -29,6 +29,10 @@ public class GetLogsV2Response extends UnmodifiableJsonifiableEntityImpl {
         return readJsonObjectArrayRequired("data");
     }
 
+    public List<SlsLog> getLogs() {
+        return getData().stream().map(SlsLog::new).toList();
+    }
+
     /**
      * @see <a href="https://help.aliyun.com/zh/sls/developer-reference/api-sls-2020-12-30-getlogsv2">返回参数</a>
      */

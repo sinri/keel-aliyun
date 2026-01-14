@@ -1,4 +1,4 @@
-package io.github.sinri.keel.integration.aliyun.sls.reader;
+package io.github.sinri.keel.integration.aliyun.sls.internal.sign;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
