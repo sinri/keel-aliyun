@@ -7,6 +7,7 @@ module io.github.sinri.keel.integration.aliyun {
     requires org.lz4.java;
     requires transitive io.github.sinri.keel.core;
     requires static org.jspecify;
+    requires java.datatransfer;
 
     // Public API packages
     exports io.github.sinri.keel.integration.aliyun.sls;

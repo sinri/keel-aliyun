@@ -29,8 +29,8 @@ public class GetLogsV2Response extends UnmodifiableJsonifiableEntityImpl {
         return readJsonObjectArrayRequired("data");
     }
 
-    public List<SlsLog> getLogs() {
-        return getData().stream().map(SlsLog::new).toList();
+    public List<SlsQueryResultRow> getQueryResultRows() {
+        return getData().stream().map(SlsQueryResultRow::new).toList();
     }
 
     /**
