@@ -5,14 +5,13 @@ import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.ThreadingModel;
-import io.vertx.core.Vertx;
 import io.vertx.junit5.VertxTestContext;
 import org.junit.jupiter.api.Test;
 
 public class SlsLoggerFactoryTest extends KeelJUnit5Test {
 
-    public SlsLoggerFactoryTest(Vertx vertx) {
-        super(vertx);
+    public SlsLoggerFactoryTest() {
+        super();
     }
 
     @Test
