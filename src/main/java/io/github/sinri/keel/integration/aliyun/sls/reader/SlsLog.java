@@ -32,10 +32,10 @@ public class SlsLog extends UnmodifiableJsonifiableEntityImpl {
          "__time__":"1765714537"
          }
          */
+        extractAndPurify(jsonObject);
     }
 
-    @Override
-    protected JsonObject purify(JsonObject raw) {
+    private void extractAndPurify(JsonObject raw) {
         Set<String> removeKeys = new HashSet<>();
         raw.forEach(entry -> {
             String key = entry.getKey();
@@ -61,7 +61,6 @@ public class SlsLog extends UnmodifiableJsonifiableEntityImpl {
         });
 
         removeKeys.forEach(raw::remove);
-        return raw;
     }
 
     public int getTime() {
