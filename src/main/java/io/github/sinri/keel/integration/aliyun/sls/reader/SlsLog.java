@@ -36,10 +36,6 @@ public class SlsLog extends UnmodifiableJsonifiableEntityImpl {
 
     @Override
     protected JsonObject purify(JsonObject raw) {
-        this.lateTime.set(raw.getInteger("__time__"));
-        this.lateSource.set(raw.getString("__source__"));
-        this.lateTopic.set(raw.getString("__topic__"));
-
         Set<String> removeKeys = new HashSet<>();
         raw.forEach(entry -> {
             String key = entry.getKey();
