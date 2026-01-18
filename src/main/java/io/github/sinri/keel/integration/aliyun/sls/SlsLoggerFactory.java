@@ -39,7 +39,6 @@ public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory 
 
     @Override
     protected Future<Void> startVerticle() {
-        //        System.out.println("SlsLoggerFactory starting...");
         QueuedLogWriterAdapter tempWriter;
         try {
             tempWriter = new SlsQueuedLogWriterAdapter(aliyunSlsConfig);
