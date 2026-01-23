@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls.reader;
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
+import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.junit5.VertxTestContext;
@@ -21,13 +22,9 @@ class SlsReaderTest extends KeelJUnit5Test {
     }
 
     @Test
-    void callGetLogsV2(VertxTestContext testContext) {
+    void callGetLogsV2(VertxTestContext testContext) throws NotConfiguredException {
         AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(ConfigElement.root());
-        testContext.verify(() -> {
-            if (aliyunSlsConfigElement == null) {
-                testContext.failNow("No Aliyun SLS Config");
-            }
-        });
+
         SlsReader slsReader = new SlsReader(getVertx(), Objects.requireNonNull(aliyunSlsConfigElement));
         GetLogsV2Request request = GetLogsV2Request.builder()
                                                    .from(Math.toIntExact(System.currentTimeMillis() / 1000 - 60 * 60 * 24 * 30))

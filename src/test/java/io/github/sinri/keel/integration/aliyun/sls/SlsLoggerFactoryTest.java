@@ -1,6 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls;
 
 import io.github.sinri.keel.base.configuration.ConfigElement;
+import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.tesuto.KeelJUnit5Test;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
@@ -15,7 +16,7 @@ public class SlsLoggerFactoryTest extends KeelJUnit5Test {
     }
 
     @Test
-    void test1(VertxTestContext testContext) {
+    void test1(VertxTestContext testContext) throws NotConfiguredException {
         AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(ConfigElement.root());
         SlsLoggerFactory slsLoggerFactory = new SlsLoggerFactory(aliyunSlsConfigElement);
         slsLoggerFactory.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))

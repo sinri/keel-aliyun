@@ -28,14 +28,14 @@ public class AliyunSlsConfigElement extends ConfigElement {
         super(another);
     }
 
-    public static @Nullable AliyunSlsConfigElement forSls(ConfigElement root) {
+    public static AliyunSlsConfigElement forSls(ConfigElement root) throws NotConfiguredException {
         ConfigElement extract = root.extract("aliyun", "sls");
-        return extract == null ? null : new AliyunSlsConfigElement(extract);
+        return new AliyunSlsConfigElement(extract);
     }
 
-    public static @Nullable AliyunSlsConfigElement forSlsMetric(ConfigElement root) {
+    public static AliyunSlsConfigElement forSlsMetric(ConfigElement root) throws NotConfiguredException {
         ConfigElement extract = root.extract("aliyun", "sls_metric");
-        return extract == null ? null : new AliyunSlsConfigElement(extract);
+        return new AliyunSlsConfigElement(extract);
     }
 
     public final boolean isDisabled() {
