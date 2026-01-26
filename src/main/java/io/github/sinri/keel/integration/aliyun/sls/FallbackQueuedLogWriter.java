@@ -31,7 +31,7 @@ class FallbackQueuedLogWriter extends QueuedLogWriterAdapter {
     @Override
     protected Future<Void> processLogRecords(String topic, List<SpecificLog<?>> batch) {
         //        System.out.println("FallbackQueuedLogWriter.processLogRecords -> " + topic + " " + batch.size());
-        return getVertx().executeBlocking(() -> {
+        return getKeel().executeBlocking(() -> {
             batch.forEach(item -> {
                 StdoutLogWriter.getInstance().accept(topic, item);
             });

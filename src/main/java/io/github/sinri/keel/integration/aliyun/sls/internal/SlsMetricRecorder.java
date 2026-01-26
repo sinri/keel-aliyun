@@ -55,7 +55,7 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
 
     private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
-                getVertx(),
+                getKeel(),
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
                 aliyunSlsConfig.getEndpoint()

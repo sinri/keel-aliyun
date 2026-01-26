@@ -53,7 +53,7 @@ public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory 
 
         return this.lateAdapter
                 .get()
-                .deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                .deployMe(getKeel(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
                 .andThen(ar -> {
                     if (ar.failed()) {
                         System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());

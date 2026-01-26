@@ -1,7 +1,7 @@
 package io.github.sinri.keel.integration.aliyun.sls.reader;
 
-import io.github.sinri.keel.base.VertxHolder;
 import io.github.sinri.keel.base.annotations.TechnicalPreview;
+import io.github.sinri.keel.base.async.Keel;
 import io.github.sinri.keel.base.configuration.NotConfiguredException;
 import io.github.sinri.keel.base.logger.factory.StdoutLoggerFactory;
 import io.github.sinri.keel.integration.aliyun.sls.AliyunSlsConfigElement;
@@ -9,7 +9,10 @@ import io.github.sinri.keel.integration.aliyun.sls.internal.protocol.Lz4Utils;
 import io.github.sinri.keel.integration.aliyun.sls.internal.sign.AliyunSlsSignatureKit;
 import io.github.sinri.keel.logger.api.LogLevel;
 import io.github.sinri.keel.logger.api.logger.Logger;
-import io.vertx.core.*;
+import io.vertx.core.Closeable;
+import io.vertx.core.Completable;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.client.HttpRequest;
@@ -32,27 +35,26 @@ import java.util.Map;
  */
 @TechnicalPreview(since = "5.0.0")
 @NullMarked
-public class SlsReader implements VertxHolder, Closeable {
+public class SlsReader implements Closeable {
     private static final String CONTENT_TYPE = "application/json";
     private static final String ACCEPT_ENCODING = "lz4";
 
-    private final Vertx vertx;
+    private final Keel keel;
     private final AliyunSlsConfigElement aliyunSlsConfigElement;
     private final WebClient webClient;
     private final Logger logger;
 
-    public SlsReader(Vertx vertx, AliyunSlsConfigElement aliyunSlsConfigElement) {
-        this.vertx = vertx;
+    public SlsReader(Keel keel, AliyunSlsConfigElement aliyunSlsConfigElement) {
+        this.keel = keel;
         this.aliyunSlsConfigElement = aliyunSlsConfigElement;
-        this.webClient = WebClient.create(vertx);
+        this.webClient = WebClient.create(keel);
         this.logger = StdoutLoggerFactory.getInstance()
                                          .createLogger(SlsReader.class.getName());
         this.logger.visibleLevel(LogLevel.WARNING);
     }
 
-    @Override
-    public final Vertx getVertx() {
-        return vertx;
+    public Keel getKeel() {
+        return keel;
     }
 
     @Override

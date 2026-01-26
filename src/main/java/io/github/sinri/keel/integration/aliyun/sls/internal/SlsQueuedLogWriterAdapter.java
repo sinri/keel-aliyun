@@ -90,7 +90,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
     protected Future<Void> processLogRecords(String topic, List<SpecificLog<?>> batch) {
         AtomicReference<LogGroup> currentLogGroupRef = new AtomicReference<>(new LogGroup(topic, source));
 
-        return asyncCallIteratively(batch, specificLog -> {
+        return getKeel().asyncCallIteratively(batch, specificLog -> {
             int timeInSec = (int) (specificLog.timestamp() / 1000);
             LogItem logItem = new LogItem(timeInSec);
 
@@ -148,7 +148,7 @@ public class SlsQueuedLogWriterAdapter extends QueuedLogWriterAdapter {
 
     private AliyunSLSLogPutter buildProducer() throws NotConfiguredException {
         return new AliyunSLSLogPutter(
-                getVertx(),
+                getKeel(),
                 aliyunSlsConfig.getAccessKeyId(),
                 aliyunSlsConfig.getAccessKeySecret(),
                 aliyunSlsConfig.getEndpoint()
