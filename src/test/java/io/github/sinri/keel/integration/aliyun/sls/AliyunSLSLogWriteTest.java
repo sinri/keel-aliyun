@@ -14,16 +14,16 @@ public class AliyunSLSLogWriteTest extends KeelInstantRunner {
     protected Future<Void> run() throws Exception {
         AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(ConfigElement.root());
         SlsLoggerFactory slsLoggerFactory = new SlsLoggerFactory(aliyunSlsConfigElement);
-        return slsLoggerFactory.deployMe(getVertx(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+        return slsLoggerFactory.deployMe(getKeel(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
                                .compose(deploymentId -> {
                                    Logger logger = slsLoggerFactory.createLogger(getClass().getSimpleName());
 
-                                     return asyncCallStepwise(10, i -> {
+                                   return getKeel().asyncCallStepwise(10, i -> {
                                          logger.info("Step " + i + " testing");
-                                         return asyncSleep(1000);
+                                                       return getKeel().asyncSleep(1000);
                                      })
                                              .compose(v -> {
-                                                 return asyncSleep(2000);
+                                                 return getKeel().asyncSleep(2000);
                                              });
                                  });
     }

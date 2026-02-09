@@ -25,7 +25,7 @@ class SlsReaderTest extends KeelJUnit5Test {
     void callGetLogsV2(VertxTestContext testContext) throws NotConfiguredException {
         AliyunSlsConfigElement aliyunSlsConfigElement = AliyunSlsConfigElement.forSls(ConfigElement.root());
 
-        SlsReader slsReader = new SlsReader(getVertx(), Objects.requireNonNull(aliyunSlsConfigElement));
+        SlsReader slsReader = new SlsReader(getKeel(), Objects.requireNonNull(aliyunSlsConfigElement));
         GetLogsV2Request request = GetLogsV2Request.builder()
                                                    .from(Math.toIntExact(System.currentTimeMillis() / 1000 - 60 * 60 * 24 * 30))
                                                    .to(Math.toIntExact(System.currentTimeMillis() / 1000))

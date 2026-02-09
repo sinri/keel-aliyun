@@ -27,7 +27,7 @@ public class SlsLoggerFactoryTest extends KeelJUnit5Test {
                         .compose(v -> {
                             slsLoggerFactory.createLogger("test1").info("!!!");
                             //                            System.out.println("!!!");
-                            return asyncSleep(1000);
+                            return getKeel().asyncSleep(1000);
                         })
                         .eventually(() -> {
                             getUnitTestLogger().info("test1 done");
