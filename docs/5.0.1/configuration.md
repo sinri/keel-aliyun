@@ -1,3 +1,8 @@
+---
+layout: default
+title: 配置参考
+---
+
 # 配置参考
 
 Keel-Aliyun 通过 Keel 框架的 `ConfigElement` 体系读取配置。配置文件通常为 `config.properties` 或等效的层级化配置源。

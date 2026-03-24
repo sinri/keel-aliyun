@@ -1,3 +1,8 @@
+---
+layout: default
+title: SLS 日志写入
+---
+
 # SLS 日志写入
 
 本模块提供基于阿里云日志服务（SLS）的异步日志写入能力。日志通过队列缓冲、Protobuf 序列化、LZ4 压缩后批量上传至 SLS。

@@ -1,3 +1,8 @@
+---
+layout: default
+title: SLS 时序指标
+---
+
 # SLS 时序指标
 
 本模块提供基于阿里云 SLS MetricStore 的时序指标写入能力，适用于应用监控、业务指标采集等场景。

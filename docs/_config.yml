@@ -1,0 +1,24 @@
+theme: jekyll-theme-merlot
+
+title: Keel-Aliyun
+description: Keel 框架的阿里云集成库 — SLS 日志、时序指标、SAE 任务
+
+# GitHub Pages 设置
+url: ""
+baseurl: ""
+
+# Markdown 渲染
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+  syntax_highlighter: rouge
+
+# 编码
+encoding: utf-8
+
+# 排除构建无关文件
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
