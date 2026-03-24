@@ -227,7 +227,7 @@ public class SlsReader implements Closeable {
                 }
             } else {
                 // Response is not compressed
-                System.out.println("responseBody: " + responseBody);
+                // System.out.println("responseBody: " + responseBody);
                 decompressedBody = responseBody;
             }
 

@@ -30,6 +30,7 @@ val lz4Version: String by project
 val protobufVersion: String by project
 val keelCoreVersion: String by project
 val keelTestVersion: String by project
+val jacksonVersion: String by project
 
 repositories {
     // Internal Nexus repository for dependencies
