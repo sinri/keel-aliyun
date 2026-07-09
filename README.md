@@ -116,8 +116,8 @@ SLS MetricStore 配置路径为 `aliyun.sls_metric`：
 aliyun.sls_metric.project=my-project
 aliyun.sls_metric.logstore=my-metric-store
 aliyun.sls_metric.endpoint=cn-hangzhou.log.aliyuncs.com
-aliyun.sls_metric.accessKeyId=LTAI5t**************
-aliyun.sls_metric.accessKeySecret=HhFr**************
+aliyun.sls_metric.accessKeyId=**************
+aliyun.sls_metric.accessKeySecret=**************
 aliyun.sls_metric.source=[IP]
 ```
 
