@@ -14,8 +14,6 @@ public final class LogEntityDescriptors {
     private final Descriptors.Descriptor contentDescriptor;
     private final Descriptors.Descriptor logTagDescriptor;
     private final Descriptors.Descriptor logGroupDescriptor;
-    @Deprecated
-    private final Descriptors.Descriptor logGroupListDescriptor;
 
     private LogEntityDescriptors() {
         try {
@@ -23,7 +21,6 @@ public final class LogEntityDescriptors {
             DescriptorProtos.DescriptorProto logDescriptorProto = createLogDescriptorProto(contentDescriptorProto);
             DescriptorProtos.DescriptorProto logTagDescriptorProto = createLogTagDescriptorProto();
             DescriptorProtos.DescriptorProto logGroupDescriptorProto = createLogGroupDescriptorProto();
-            DescriptorProtos.DescriptorProto logGroupListDescriptorProto = createLogGroupListDescriptorProto();
             // 创建文件描述符
             var fileDescriptorProto = DescriptorProtos.FileDescriptorProto
                     .newBuilder()
@@ -32,7 +29,6 @@ public final class LogEntityDescriptors {
                     .addMessageType(logDescriptorProto)
                     .addMessageType(logTagDescriptorProto)
                     .addMessageType(logGroupDescriptorProto)
-                    .addMessageType(logGroupListDescriptorProto)
                     .build();
 
             var fileDescriptor = Descriptors.FileDescriptor
@@ -42,7 +38,6 @@ public final class LogEntityDescriptors {
             contentDescriptor = logDescriptor.findNestedTypeByName("Content");
             logTagDescriptor = fileDescriptor.findMessageTypeByName("LogTag");
             logGroupDescriptor = fileDescriptor.findMessageTypeByName("LogGroup");
-            logGroupListDescriptor = fileDescriptor.findMessageTypeByName("LogGroupList");
         } catch (Descriptors.DescriptorValidationException e) {
             throw new RuntimeException(e);
         }
@@ -176,32 +171,8 @@ public final class LogEntityDescriptors {
                 .build();
     }
 
-    /**
-     * 创建 LogGroupList 消息描述符
-     */
-    private DescriptorProtos.DescriptorProto createLogGroupListDescriptorProto() {
-        return DescriptorProtos.DescriptorProto
-                .newBuilder()
-                .setName("LogGroupList")
-                .addField(DescriptorProtos.FieldDescriptorProto
-                        .newBuilder()
-                        .setName("logGroupList")
-                        .setNumber(1)
-                        .setType(DescriptorProtos.FieldDescriptorProto.Type.TYPE_MESSAGE)
-                        .setLabel(DescriptorProtos.FieldDescriptorProto.Label.LABEL_REPEATED)
-                        .setTypeName(".LogGroup")
-                        .build())
-                .build();
-
-    }
-
     public Descriptors.Descriptor getLogTagDescriptor() {
         return logTagDescriptor;
-    }
-
-    @Deprecated
-    public Descriptors.Descriptor getLogGroupListDescriptor() {
-        return logGroupListDescriptor;
     }
 
     public Descriptors.Descriptor getLogGroupDescriptor() {

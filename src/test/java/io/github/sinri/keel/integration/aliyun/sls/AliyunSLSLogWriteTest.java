@@ -16,6 +16,7 @@ public class AliyunSLSLogWriteTest extends KeelInstantRunner {
         SlsLoggerFactory slsLoggerFactory = new SlsLoggerFactory(aliyunSlsConfigElement);
         return slsLoggerFactory.deployMe(getKeel(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
                                .compose(deploymentId -> {
+                                   getLogger().info("SlsLoggerFactory deployed: " + deploymentId);
                                    Logger logger = slsLoggerFactory.createLogger(getClass().getSimpleName());
 
                                    return getKeel().asyncCallStepwise(10, i -> {

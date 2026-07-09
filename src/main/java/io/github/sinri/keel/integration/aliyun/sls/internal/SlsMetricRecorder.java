@@ -117,9 +117,15 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
         logItem.addContent(nameKey, metricRecord.metricName());
         logItem.addContent(valueKey, String.valueOf(metricRecord.value()));
 
+        String labels = buildLabelsContent(metricRecord.labels(), this.source);
+        logItem.addContent(labelsKey, labels);
+        return logItem;
+    }
+
+    static String buildLabelsContent(Map<String, String> labels, String source) {
         // 按照字典序对labels排序, 如果您的labels已排序, 请忽略此步骤。
-        metricRecord.labels().put("source", this.source);
-        TreeMap<String, String> sortedLabels = new TreeMap<>(metricRecord.labels());
+        TreeMap<String, String> sortedLabels = new TreeMap<>(labels);
+        sortedLabels.put("source", source);
         StringBuilder labelsBuilder = new StringBuilder();
 
         boolean hasPrev = false;
@@ -132,7 +138,6 @@ public class SlsMetricRecorder extends AbstractMetricRecorder {
             labelsBuilder.append("#$#");
             labelsBuilder.append(entry.getValue());
         }
-        logItem.addContent(labelsKey, labelsBuilder.toString());
-        return logItem;
+        return labelsBuilder.toString();
     }
 }

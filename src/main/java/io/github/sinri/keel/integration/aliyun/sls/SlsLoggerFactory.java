@@ -49,29 +49,20 @@ public class SlsLoggerFactory extends KeelVerticleBase implements LoggerFactory 
                     .level(LogLevel.WARNING)
                     .message("SlsLoggerFactory adapter impl fallback to " + tempWriter.getClass().getName()));
         }
-        this.lateAdapter.set(tempWriter);
 
-        return this.lateAdapter
-                .get()
-                .deployMe(getKeel(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
-                .andThen(ar -> {
-                    if (ar.failed()) {
-                        System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
-                    } else {
-                        System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
-                    }
-                })
-                .compose(s -> {
-                    return Future.succeededFuture();
-                });
-    }
-
-    @Override
-    protected Future<Void> stopVerticle() {
-        if (lateAdapter.isInitialized()) {
-            return lateAdapter.get().undeployMe();
-        }
-        return Future.succeededFuture();
+        QueuedLogWriterAdapter finalTempWriter = tempWriter;
+        return finalTempWriter.deployMe(getKeel(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER))
+                              .andThen(ar -> {
+                                  if (ar.failed()) {
+                                      System.err.println("Failed to deploy SlsQueuedLogWriterAdapter: " + ar.cause());
+                                  } else {
+                                      System.out.println("SlsQueuedLogWriterAdapter deployed: " + ar.result());
+                                  }
+                              })
+                              .compose(s -> {
+                                  this.lateAdapter.set(finalTempWriter);
+                                  return Future.succeededFuture();
+                              });
     }
 
     protected QueuedLogWriterAdapter buildFallbackQueuedLogWriter() {

@@ -26,9 +26,4 @@ message LogGroup
   optional string Source = 4;
   repeated LogTag LogTags = 6;
 }
-
-message LogGroupList
-{
-  repeated LogGroup logGroupList = 1;
-}
 ```

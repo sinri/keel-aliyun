@@ -20,8 +20,6 @@ import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
 import org.jspecify.annotations.NullMarked;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -137,14 +135,7 @@ public class SlsReader implements Closeable {
         headers.put("Content-Length", String.valueOf(bodyBuffer.length()));
         headers.put("Accept-Encoding", ACCEPT_ENCODING);
 
-        // Calculate Content-MD5
-        try {
-            var contentMd5 = Base64.getEncoder().encodeToString(
-                    java.security.MessageDigest.getInstance("MD5").digest(bodyBuffer.getBytes()));
-            headers.put("Content-MD5", contentMd5);
-        } catch (NoSuchAlgorithmException e) {
-            return Future.failedFuture(new RuntimeException("MD5 algorithm not available", e));
-        }
+        headers.put("Content-MD5", AliyunSlsSignatureKit.contentMd5(bodyBuffer));
 
         // Calculate SLS LOG signature
         String signature = AliyunSlsSignatureKit.calculateSignature(

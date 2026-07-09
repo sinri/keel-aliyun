@@ -13,9 +13,9 @@ import io.vertx.ext.web.client.WebClient;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -111,13 +111,7 @@ public class AliyunSLSLogPutter implements Closeable {
         Buffer payload = Lz4Utils.compress(raw);
         headers.put("Content-Length", String.valueOf(payload.length()));
 
-        try {
-            var contentMd5 = Base64.getEncoder().encodeToString(
-                    java.security.MessageDigest.getInstance("MD5").digest(payload.getBytes()));
-            headers.put("Content-MD5", contentMd5);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MD5 algorithm not available", e);
-        }
+        headers.put("Content-MD5", AliyunSlsSignatureKit.contentMd5(payload));
 
         // Calculate signature and add authorization header
         String signature = AliyunSlsSignatureKit.calculateSignature(
@@ -136,26 +130,55 @@ public class AliyunSLSLogPutter implements Closeable {
         return request.sendBuffer(payload)
                       .compose(bufferHttpResponse -> {
                           if (bufferHttpResponse.statusCode() != 200) {
-                              // System.out.println("write to sls: 200");
-                              logger.error("put log failed [" + bufferHttpResponse.statusCode() + "] "
-                                      + bufferHttpResponse.bodyAsString());
+                              String reason = "HTTP " + bufferHttpResponse.statusCode() + ": "
+                                      + bufferHttpResponse.bodyAsString();
+                              fallbackLog(reason, logGroup);
                           }
                           return Future.succeededFuture();
                       })
                       .recover(throwable -> {
-                          logger.error(log -> log.exception(throwable).message("put log failed [X]"));
+                          String reason = throwable.getClass().getName() + ": " + throwable.getMessage();
+                          logger.error(log -> log.exception(throwable)
+                                                 .message("put log to SLS failed; fallback output follows"));
+                          fallbackLog(reason, logGroup);
                           return Future.succeededFuture();
                       })
                       .mapEmpty();
     }
 
-    /**
-     * According to Aliyun SLS API documentation, we should send LogGroupList;
-     * But let's try sending just the first LogGroup to see if that works.
-     */
-
-    private Buffer serializeLogGroup(LogGroup logGroup) {
+    static Buffer serializeLogGroup(LogGroup logGroup) {
         return Buffer.buffer(logGroup.toProtobuf().toByteArray());
+    }
+
+    private void fallbackLog(String reason, LogGroup logGroup) {
+        buildFallbackLines(reason, logGroup).forEach(logger::error);
+    }
+
+    static List<String> buildFallbackLines(String reason, LogGroup logGroup) {
+        List<String> lines = new ArrayList<>();
+        lines.add("put log to SLS failed; fallback output begins");
+        lines.add("reason: " + reason);
+        lines.add("topic: " + logGroup.getTopic());
+        lines.add("source: " + logGroup.getSource());
+        lines.add("logTags: " + logGroup.getLogTags().size());
+        for (int i = 0; i < logGroup.getLogTags().size(); i++) {
+            var logTag = logGroup.getLogTags().get(i);
+            lines.add("  tag[" + i + "]." + logTag.getKey() + "=" + logTag.getValue());
+        }
+        lines.add("logItems: " + logGroup.getLogItems().size());
+        for (int i = 0; i < logGroup.getLogItems().size(); i++) {
+            var logItem = logGroup.getLogItems().get(i);
+            String itemLine = "  item[" + i + "].time=" + logItem.getTime();
+            if (logItem.getNanoPartOfTime() != null) {
+                itemLine += ", nano=" + logItem.getNanoPartOfTime();
+            }
+            lines.add(itemLine);
+            for (var content : logItem.getContents()) {
+                lines.add("    " + content.getKey() + "=" + content.getValue());
+            }
+        }
+        lines.add("put log to SLS failed; fallback output ends");
+        return lines;
     }
 
 }
