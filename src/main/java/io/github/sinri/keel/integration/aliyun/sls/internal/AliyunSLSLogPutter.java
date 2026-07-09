@@ -149,12 +149,7 @@ public class AliyunSLSLogPutter implements Closeable {
                       .mapEmpty();
     }
 
-    /**
-     * According to Aliyun SLS API documentation, we should send LogGroupList;
-     * But let's try sending just the first LogGroup to see if that works.
-     */
-
-    private Buffer serializeLogGroup(LogGroup logGroup) {
+    static Buffer serializeLogGroup(LogGroup logGroup) {
         return Buffer.buffer(logGroup.toProtobuf().toByteArray());
     }
 
