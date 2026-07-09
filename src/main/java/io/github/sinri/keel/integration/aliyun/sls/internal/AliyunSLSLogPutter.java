@@ -13,8 +13,6 @@ import io.vertx.ext.web.client.WebClient;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -111,13 +109,7 @@ public class AliyunSLSLogPutter implements Closeable {
         Buffer payload = Lz4Utils.compress(raw);
         headers.put("Content-Length", String.valueOf(payload.length()));
 
-        try {
-            var contentMd5 = Base64.getEncoder().encodeToString(
-                    java.security.MessageDigest.getInstance("MD5").digest(payload.getBytes()));
-            headers.put("Content-MD5", contentMd5);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("MD5 algorithm not available", e);
-        }
+        headers.put("Content-MD5", AliyunSlsSignatureKit.contentMd5(payload));
 
         // Calculate signature and add authorization header
         String signature = AliyunSlsSignatureKit.calculateSignature(

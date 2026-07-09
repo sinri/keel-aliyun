@@ -41,14 +41,40 @@ public class AliyunSlsSignatureKit {
             @Nullable String queries,
             String accessKeySecret
     ) {
+        var signStr = buildSignatureMessage(method, contentType, date, headers, uri, queries);
+
+        try {
+            // Calculate HMAC-SHA1 signature
+            var HmacSHA1 = "HmacSHA1";
+            Mac mac = Mac.getInstance(HmacSHA1);
+            SecretKeySpec signingKey = new SecretKeySpec(
+                    accessKeySecret.getBytes(StandardCharsets.UTF_8),
+                    HmacSHA1);
+            mac.init(signingKey);
+            byte[] signatureBytes = mac.doFinal(signStr.getBytes(StandardCharsets.UTF_8));
+
+            // Encode signature in Base64
+            return Base64.getEncoder().encodeToString(signatureBytes);
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String contentMd5(Buffer body) {
+        return DigestUtils.MD5(body.getBytes());
+    }
+
+    static String buildSignatureMessage(
+            String method,
+            @Nullable String contentType,
+            String date,
+            Map<String, String> headers,
+            String uri,
+            @Nullable String queries
+    ) {
         StringBuilder sb = new StringBuilder();
         sb.append(method).append("\n");
-        if (body != null) {
-            String md5 = DigestUtils.MD5(body.getBytes());
-            sb.append(md5).append("\n");
-        } else {
-            sb.append("\n");
-        }
+        sb.append(findHeaderValue(headers, "Content-MD5").orElse("")).append("\n");
         if (contentType != null) {
             sb.append(contentType).append("\n");
         } else {
@@ -66,24 +92,15 @@ public class AliyunSlsSignatureKit {
         if (queries != null && !queries.isBlank()) {
             sb.append("?").append(queries);
         }
+        return sb.toString();
+    }
 
-        var signStr = sb.toString();
-
-        try {
-            // Calculate HMAC-SHA1 signature
-            var HmacSHA1 = "HmacSHA1";
-            Mac mac = Mac.getInstance(HmacSHA1);
-            SecretKeySpec signingKey = new SecretKeySpec(
-                    accessKeySecret.getBytes(StandardCharsets.UTF_8),
-                    HmacSHA1);
-            mac.init(signingKey);
-            byte[] signatureBytes = mac.doFinal(signStr.getBytes(StandardCharsets.UTF_8));
-
-            // Encode signature in Base64
-            return Base64.getEncoder().encodeToString(signatureBytes);
-        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+    private static Optional<String> findHeaderValue(Map<String, String> headers, String headerName) {
+        return headers.entrySet()
+                      .stream()
+                      .filter(entry -> entry.getKey().equalsIgnoreCase(headerName))
+                      .map(Map.Entry::getValue)
+                      .findFirst();
     }
 
     /**
